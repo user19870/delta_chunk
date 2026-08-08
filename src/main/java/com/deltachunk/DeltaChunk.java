@@ -21,8 +21,11 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -110,14 +113,48 @@ public final class DeltaChunk {
         MinecraftServer server =
                 event.getServer();
 
+        WamStore store = new WamStore(server);
+
         STORES.put(
                 server,
-                new WamStore(server)
+                store
         );
+
+        Set<String> modified =
+                ConcurrentHashMap.newKeySet();
+
+        /*
+         * Load the persisted "modified chunk" index from the
+         * previous session(s). Without this, every server restart
+         * would forget which chunks were ever touched by the
+         * player, and the next compaction pass on shutdown would
+         * wrongly strip out chunks containing real player builds.
+         */
+        try {
+
+            modified.addAll(
+                    store.loadModifiedIndex()
+            );
+
+            LOGGER.info(
+                    "[DeltaChunk] Loaded {} previously-modified chunk entries.",
+                    modified.size()
+            );
+
+        } catch (Exception exception) {
+
+            LOGGER.error(
+                    "[DeltaChunk] Failed to load modified chunk index, " +
+                    "starting with an empty set. This risks the next " +
+                    "compaction pass stripping chunks that were actually " +
+                    "modified previously.",
+                    exception
+            );
+        }
 
         MODIFIED.put(
                 server,
-                ConcurrentHashMap.newKeySet()
+                modified
         );
 
         LOGGER.info(
@@ -125,6 +162,19 @@ public final class DeltaChunk {
         );
     }
 
+    /*
+     * IMPORTANT TIMING ASSUMPTION:
+     *
+     * This assumes that by the time ServerStoppingEvent fires, the
+     * vanilla save-all-chunks pass has ALREADY completed and every
+     * .mca file on disk reflects the final state of the world for
+     * this session. If that assumption is wrong for some code path
+     * (e.g. a forced/crash shutdown that skips the normal save),
+     * this compaction pass could run against a stale or partially
+     * written .mca and strip chunks that were never actually
+     * flushed. If you see corruption after a crash, verify save
+     * ordering here first.
+     */
     private void onServerStopping(
             ServerStoppingEvent event
     ) {
@@ -132,9 +182,176 @@ public final class DeltaChunk {
         MinecraftServer server =
                 event.getServer();
 
+        WamStore store =
+                STORES.get(server);
+
+        Set<String> modified =
+                MODIFIED.get(server);
+
+        if (store == null || modified == null) {
+
+            LOGGER.warn(
+                    "[DeltaChunk] Missing store/modified set on " +
+                    "shutdown, skipping persistence and compaction."
+            );
+
+            return;
+        }
+
+        /*
+         * Persist the modified-chunk index FIRST, before touching
+         * any .mca file. If compaction below throws partway
+         * through, we still want the index on disk to be accurate
+         * for next startup.
+         */
+        try {
+
+            store.saveModifiedIndex(modified);
+
+            LOGGER.info(
+                    "[DeltaChunk] Persisted {} modified chunk entries.",
+                    modified.size()
+            );
+
+        } catch (Exception exception) {
+
+            LOGGER.error(
+                    "[DeltaChunk] Failed to persist modified chunk " +
+                    "index. Aborting compaction this session to avoid " +
+                    "stripping chunks based on an incomplete picture.",
+                    exception
+            );
+
+            return;
+        }
+
+        try {
+
+            compactAllDimensions(server, modified);
+
+        } catch (Exception exception) {
+
+            LOGGER.error(
+                    "[DeltaChunk] Region compaction failed.",
+                    exception
+            );
+        }
+
         LOGGER.info(
                 "[DeltaChunk] Server stopping."
         );
+    }
+
+    /*
+     * Walk every loaded level's region folder and strip out any
+     * chunk that was never recorded as modified, using
+     * RegionCompactor. This operates on the .mca files directly on
+     * disk, AFTER vanilla's own save has already written them.
+     */
+    private void compactAllDimensions(
+            MinecraftServer server,
+            Set<String> modified
+    ) {
+
+        for (ServerLevel level : server.getAllLevels()) {
+
+            String dimension = dimensionId(level);
+
+            Path regionDir =
+                    resolveRegionDir(server, level);
+
+            if (regionDir == null) {
+
+                LOGGER.warn(
+                        "[DeltaChunk] Could not resolve region " +
+                        "directory for dimension {}, skipping " +
+                        "compaction for it.",
+                        dimension
+                );
+
+                continue;
+            }
+
+            try {
+
+                RegionCompactor.compactDimension(
+                        regionDir,
+                        (chunkX, chunkZ) ->
+                                modified.contains(
+                                        dimension + "|" + chunkX + "|" + chunkZ
+                                )
+                );
+
+                LOGGER.info(
+                        "[DeltaChunk] Compacted region files for {} ({}).",
+                        dimension,
+                        regionDir
+                );
+
+            } catch (IOException exception) {
+
+                LOGGER.error(
+                        "[DeltaChunk] Failed to compact region files for {}.",
+                        dimension,
+                        exception
+                );
+            }
+        }
+    }
+
+    /*
+     * Resolve the on-disk "region" folder for a given dimension.
+     *
+     * This targets the pre-26.1 Java Edition level layout (which is
+     * what NeoForge 1.21.1 uses):
+     *
+     *   <world>/region/                              (minecraft:overworld)
+     *   <world>/DIM-1/region/                         (minecraft:the_nether)
+     *   <world>/DIM1/region/                          (minecraft:the_end)
+     *   <world>/dimensions/<namespace>/<path>/region/ (any other/modded dim)
+     *
+     * IMPORTANT: if this mod is ever ported to a Minecraft version
+     * using the restructured save layout introduced in 26.1 snap6
+     * (where the overworld's region folder moves under
+     * dimensions/minecraft/overworld/region), this method must be
+     * updated accordingly, or compaction will silently do nothing
+     * because the resolved path won't exist.
+     */
+    private static Path resolveRegionDir(
+            MinecraftServer server,
+            ServerLevel level
+    ) {
+
+        Path worldRoot =
+                server.getWorldPath(LevelResource.ROOT);
+
+        net.minecraft.resources.ResourceKey<Level> dimensionKey =
+                level.dimension();
+
+        if (dimensionKey.equals(Level.OVERWORLD)) {
+            return worldRoot.resolve("region");
+        }
+
+        if (dimensionKey.equals(Level.NETHER)) {
+            return worldRoot.resolve("DIM-1").resolve("region");
+        }
+
+        if (dimensionKey.equals(Level.END)) {
+            return worldRoot.resolve("DIM1").resolve("region");
+        }
+
+        // Any other (modded/datapack) dimension.
+        String namespace =
+                dimensionKey.location().getNamespace();
+
+        String path =
+                dimensionKey.location().getPath();
+
+        return worldRoot
+                .resolve("dimensions")
+                .resolve(namespace)
+                .resolve(path)
+                .resolve("region");
     }
 
     private void onServerStopped(
