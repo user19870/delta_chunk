@@ -4,7 +4,7 @@ loaderVersion="[1,)"
 license="MIT"
 
 [[mods]]
-modId="delta_chunk"
+modId="deltachunk"
 version="0.1.0"
 displayName="Delta Chunk"
 authors="user19870"
@@ -14,14 +14,14 @@ Single-player procedural world storage using WAM files.
 
 
  
-[[dependencies.delta_chunk]]
+[[dependencies.deltachunk]]
 modId="neoforge"
 type="required"
 versionRange="[21,)"
 ordering="NONE"
 side="BOTH"
 
-[[dependencies.delta_chunk]]
+[[dependencies.deltachunk]]
 modId="minecraft"
 type="required"
 versionRange="[1,)"
