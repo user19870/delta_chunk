@@ -3,9 +3,7 @@ package com.deltachunk;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -14,9 +12,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelResource;
 
 public final class WamStore {
 
@@ -29,10 +29,9 @@ public final class WamStore {
     public WamStore(MinecraftServer server) {
         this.server = server;
 
-        this.root =
-                server
-                        .getWorldPath(LevelResource.ROOT)
-                        .resolve("wam");
+        this.root = server
+                .getWorldPath(LevelResource.ROOT)
+                .resolve("wam");
     }
 
     public void saveChunk(
@@ -43,9 +42,7 @@ public final class WamStore {
 
         Path file = getFile(dimension);
 
-        Files.createDirectories(
-                file.getParent()
-        );
+        Files.createDirectories(file.getParent());
 
         Map<Long, CompoundTag> chunks;
 
@@ -60,30 +57,7 @@ public final class WamStore {
                 chunkData.copy()
         );
 
-        write(
-                file,
-                chunks
-        );
-    }
-
-    public boolean hasChunk(
-            String dimension,
-            ChunkPos pos
-    ) throws IOException {
-
-        Path file =
-                getFile(dimension);
-
-        if (!Files.exists(file)) {
-            return false;
-        }
-
-        Map<Long, CompoundTag> chunks =
-                read(file);
-
-        return chunks.containsKey(
-                pos.toLong()
-        );
+        write(file, chunks);
     }
 
     public CompoundTag loadChunk(
@@ -91,35 +65,24 @@ public final class WamStore {
             ChunkPos pos
     ) throws IOException {
 
-        Path file =
-                getFile(dimension);
+        Path file = getFile(dimension);
 
         if (!Files.exists(file)) {
             return null;
         }
 
-        Map<Long, CompoundTag> chunks =
-                read(file);
+        Map<Long, CompoundTag> chunks = read(file);
 
-        CompoundTag tag =
-                chunks.get(
-                        pos.toLong()
-                );
+        CompoundTag tag = chunks.get(pos.toLong());
 
-        return tag == null
-                ? null
-                : tag.copy();
+        return tag == null ? null : tag.copy();
     }
 
-    private Path getFile(
-            String dimension
-    ) {
-
-        String safeName =
-                dimension
-                        .replace(':', '_')
-                        .replace('/', '_')
-                        .replace('\\', '_');
+    private Path getFile(String dimension) {
+        String safeName = dimension
+                .replace(':', '_')
+                .replace('/', '_')
+                .replace('\\', '_');
 
         return root.resolve(
                 safeName + ".wam"
@@ -130,46 +93,34 @@ public final class WamStore {
             Path file
     ) throws IOException {
 
-        Map<Long, CompoundTag> result =
-                new HashMap<>();
+        Map<Long, CompoundTag> result = new HashMap<>();
 
         try (
                 DataInputStream input =
                         new DataInputStream(
                                 new BufferedInputStream(
-                                        Files.newInputStream(
-                                                file
-                                        )
+                                        Files.newInputStream(file)
                                 )
                         )
         ) {
-
-            int version =
-                    input.readInt();
+            int version = input.readInt();
 
             if (version != FORMAT_VERSION) {
                 throw new IOException(
-                        "Unsupported WAM version: "
-                                + version
+                        "Unsupported WAM version: " + version
                 );
             }
 
-            int count =
-                    input.readInt();
+            int count = input.readInt();
 
-            if (count < 0 ||
-                    count > 10_000_000) {
-
+            if (count < 0 || count > 10_000_000) {
                 throw new IOException(
-                        "Invalid WAM chunk count: "
-                                + count
+                        "Invalid WAM chunk count: " + count
                 );
             }
 
             for (int i = 0; i < count; i++) {
-
-                long chunkKey =
-                        input.readLong();
+                long chunkKey = input.readLong();
 
                 CompoundTag tag =
                         NbtIo.read(
@@ -177,10 +128,7 @@ public final class WamStore {
                                 NbtAccounter.unlimitedHeap()
                         );
 
-                result.put(
-                        chunkKey,
-                        tag
-                );
+                result.put(chunkKey, tag);
             }
         }
 
@@ -194,36 +142,24 @@ public final class WamStore {
 
         Path temporary =
                 file.resolveSibling(
-                        file.getFileName()
-                                + ".tmp"
+                        file.getFileName() + ".tmp"
                 );
 
         try (
                 DataOutputStream output =
                         new DataOutputStream(
                                 new BufferedOutputStream(
-                                        Files.newOutputStream(
-                                                temporary
-                                        )
+                                        Files.newOutputStream(temporary)
                                 )
-        )) {
+                        )
+        ) {
+            output.writeInt(FORMAT_VERSION);
+            output.writeInt(chunks.size());
 
-            output.writeInt(
-                    FORMAT_VERSION
-            );
+            for (Map.Entry<Long, CompoundTag> entry :
+                    chunks.entrySet()) {
 
-            output.writeInt(
-                    chunks.size()
-            );
-
-            for (
-                    Map.Entry<Long, CompoundTag> entry :
-                    chunks.entrySet()
-            ) {
-
-                output.writeLong(
-                        entry.getKey()
-                );
+                output.writeLong(entry.getKey());
 
                 NbtIo.write(
                         entry.getValue(),
@@ -233,22 +169,17 @@ public final class WamStore {
         }
 
         try {
-
             Files.move(
                     temporary,
                     file,
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.ATOMIC_MOVE
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE
             );
-
-        } catch (
-                java.nio.file.AtomicMoveNotSupportedException exception
-        ) {
-
+        } catch (java.nio.file.AtomicMoveNotSupportedException exception) {
             Files.move(
                     temporary,
                     file,
-                    StandardCopyOption.REPLACE_EXISTING
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
             );
         }
     }
