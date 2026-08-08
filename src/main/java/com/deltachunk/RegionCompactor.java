@@ -1,4 +1,4 @@
- package com.deltachunk;
+package com.deltachunk;
 
 import net.minecraft.world.level.ChunkPos;
 
@@ -23,17 +23,28 @@ import java.util.stream.Stream;
  * has already been written normally.
  *
  * Region file layout (Anvil format):
- *   [0      .. 4096)   : 1024 entries, 4 bytes each -> (offset:3 bytes in 4KiB sectors, sectorCount:1 byte)
+ *   [0      .. 4096)   : 1024 header entries, 4 bytes each -> (offset:3 bytes in 4KiB sectors, sectorCount:1 byte)
  *   [4096   .. 8192)   : 1024 timestamps, 4 bytes each
- *   [8192   .. EOF)    : chunk payloads, sector (4096 byte) aligned
+ *   [8192   .. EOF)    : chunk payloads, sector (4096 byte) aligned.
+ *                        Each payload record is [4 byte big-endian
+ *                        length][1 byte compression type][length-1
+ *                        bytes of compressed NBT data].
  *
- * To mark a chunk as "not present" (equivalent to "never generated"
- * from the game's point of view), we zero out its 4-byte header
- * entry. We deliberately do NOT rewrite/shrink the payload area in
- * this first pass: the now-unreferenced sectors simply become dead
- * space. This keeps the implementation simple and safe (no risk of
- * corrupting offsets of chunks we decide to keep). A follow-up
- * "shrink" pass can later rewrite the file to reclaim that space.
+ * For every chunk NOT present in the caller-provided keepPredicate,
+ * this rewrites the entire region file so that chunk's payload is
+ * gone entirely (not just its header pointer zeroed): a brand new
+ * file is built containing only the header/timestamp slots and
+ * payload bytes for chunks we're keeping, sector-aligned and packed
+ * back-to-back starting right after the header+timestamp sectors.
+ * The new file then atomically replaces the original.
+ *
+ * This is a real compaction pass, not a "mark absent, deal with it
+ * later" pass: dropped chunks' bytes are actually removed from disk,
+ * which is what makes the .mca file shrink. An earlier version of
+ * this class only zeroed header entries and left the old payload
+ * bytes as dead space; that version made removed chunks regenerate
+ * correctly but did NOT reduce file size, which is why file size
+ * appeared unchanged after compaction until this rewrite was added.
  */
 public final class RegionCompactor {
 
@@ -134,7 +145,7 @@ public final class RegionCompactor {
                 FileChannel channel = raf.getChannel()
         ) {
 
-            if (channel.size() < HEADER_BYTES) {
+            if (channel.size() < HEADER_BYTES * 2) {
                 // Malformed / empty region file, nothing to do.
                 return stats;
             }
@@ -144,11 +155,26 @@ public final class RegionCompactor {
             try {
 
                 byte[] header = new byte[HEADER_BYTES];
+                byte[] timestamps = new byte[HEADER_BYTES];
 
                 raf.seek(0);
                 raf.readFully(header);
+                raf.readFully(timestamps);
 
-                boolean changed = false;
+                /*
+                 * Decide, per slot, whether to keep it, and if so,
+                 * read its actual payload bytes NOW (before we start
+                 * writing anything), since we're about to build an
+                 * entirely new file layout.
+                 *
+                 * A chunk's payload on disk is:
+                 *   [4 bytes length][1 byte compression type][length-1 bytes data]
+                 * starting at sector offsetEntry, spanning sectorCount
+                 * sectors (sectorCount is only an upper bound / disk
+                 * allocation, the real length is the leading 4-byte
+                 * field).
+                 */
+                byte[][] keptPayloads = new byte[CHUNKS_PER_REGION][];
 
                 for (int index = 0; index < CHUNKS_PER_REGION; index++) {
 
@@ -160,7 +186,6 @@ public final class RegionCompactor {
                     int sectorCount = header[index * 4 + 3] & 0xFF;
 
                     if (offsetEntry == 0 && sectorCount == 0) {
-                        // Already absent, nothing to strip.
                         stats.entriesAlreadyAbsent += 1;
                         continue;
                     }
@@ -177,25 +202,180 @@ public final class RegionCompactor {
                                     chunkZ
                             );
 
-                    if (keep) {
-                        stats.entriesKept += 1;
+                    if (!keep) {
+                        stats.entriesStripped += 1;
                         continue;
                     }
 
-                    // Zero the 4-byte header entry: offset=0, sectorCount=0.
-                    // This is the documented "chunk not present" marker.
-                    header[index * 4] = 0;
-                    header[index * 4 + 1] = 0;
-                    header[index * 4 + 2] = 0;
-                    header[index * 4 + 3] = 0;
+                    stats.entriesKept += 1;
 
-                    stats.entriesStripped += 1;
-                    changed = true;
+                    long payloadOffsetBytes =
+                            (long) offsetEntry * SECTOR_BYTES;
+
+                    if (payloadOffsetBytes + 4 > channel.size()) {
+                        // Corrupt entry pointing past EOF: drop it
+                        // rather than crash the whole compaction.
+                        stats.entriesKept -= 1;
+                        stats.entriesStripped += 1;
+                        continue;
+                    }
+
+                    raf.seek(payloadOffsetBytes);
+
+                    byte[] lengthBytes = new byte[4];
+                    raf.readFully(lengthBytes);
+
+                    int declaredLength =
+                            ((lengthBytes[0] & 0xFF) << 24)
+                            | ((lengthBytes[1] & 0xFF) << 16)
+                            | ((lengthBytes[2] & 0xFF) << 8)
+                            | (lengthBytes[3] & 0xFF);
+
+                    if (
+                            declaredLength <= 0
+                            || payloadOffsetBytes + 4 + declaredLength > channel.size()
+                    ) {
+                        // Corrupt/garbage entry: drop it defensively
+                        // instead of writing garbage into the new file.
+                        stats.entriesKept -= 1;
+                        stats.entriesStripped += 1;
+                        continue;
+                    }
+
+                    // Full on-disk record for this chunk = 4 length
+                    // bytes + declaredLength bytes (which itself
+                    // starts with the 1-byte compression type).
+                    byte[] fullRecord = new byte[4 + declaredLength];
+
+                    System.arraycopy(
+                            lengthBytes, 0,
+                            fullRecord, 0,
+                            4
+                    );
+
+                    raf.seek(payloadOffsetBytes + 4);
+                    raf.readFully(
+                            fullRecord,
+                            4,
+                            declaredLength
+                    );
+
+                    keptPayloads[index] = fullRecord;
                 }
 
-                if (changed) {
-                    raf.seek(0);
-                    raf.write(header);
+                boolean nothingKept = stats.entriesKept == 0;
+
+                if (nothingKept && stats.entriesStripped == 0) {
+                    // Nothing changed at all, no need to touch the
+                    // file further (avoids pointless rewrites on
+                    // every single shutdown for untouched regions).
+                    return stats;
+                }
+
+                /*
+                 * Build the new file layout in memory:
+                 *   header (4096) + timestamps (4096) + payloads,
+                 * sector-aligned, in slot order. Slot order (rather
+                 * than original disk order) keeps this simple and
+                 * deterministic; region files don't require payloads
+                 * to be in any particular order.
+                 */
+                byte[] newHeader = new byte[HEADER_BYTES];
+                byte[] newTimestamps = new byte[HEADER_BYTES];
+
+                java.io.ByteArrayOutputStream payloadStream =
+                        new java.io.ByteArrayOutputStream();
+
+                int nextSector = 2; // sectors 0-1 are header+timestamps
+
+                for (int index = 0; index < CHUNKS_PER_REGION; index++) {
+
+                    byte[] record = keptPayloads[index];
+
+                    if (record == null) {
+                        // Header/timestamp entries already zero by
+                        // default in a freshly allocated byte[].
+                        continue;
+                    }
+
+                    int sectorsNeeded =
+                            (record.length + SECTOR_BYTES - 1) / SECTOR_BYTES;
+
+                    if (sectorsNeeded == 0) {
+                        sectorsNeeded = 1;
+                    }
+
+                    if (sectorsNeeded > 255) {
+                        // Anvil format caps sectorCount at 1 byte.
+                        // This should be extraordinarily rare; drop
+                        // defensively rather than write a corrupt
+                        // header entry.
+                        stats.entriesKept -= 1;
+                        stats.entriesStripped += 1;
+                        continue;
+                    }
+
+                    newHeader[index * 4] =
+                            (byte) ((nextSector >> 16) & 0xFF);
+                    newHeader[index * 4 + 1] =
+                            (byte) ((nextSector >> 8) & 0xFF);
+                    newHeader[index * 4 + 2] =
+                            (byte) (nextSector & 0xFF);
+                    newHeader[index * 4 + 3] =
+                            (byte) sectorsNeeded;
+
+                    // Preserve the original timestamp for this slot.
+                    System.arraycopy(
+                            timestamps, index * 4,
+                            newTimestamps, index * 4,
+                            4
+                    );
+
+                    payloadStream.write(record);
+
+                    int paddedLength = sectorsNeeded * SECTOR_BYTES;
+                    int padding = paddedLength - record.length;
+
+                    if (padding > 0) {
+                        payloadStream.write(new byte[padding]);
+                    }
+
+                    nextSector += sectorsNeeded;
+                }
+
+                Path temporary =
+                        file.resolveSibling(
+                                file.getFileName() + ".compact.tmp"
+                        );
+
+                try (
+                        java.io.OutputStream out =
+                                java.nio.file.Files.newOutputStream(
+                                        temporary,
+                                        java.nio.file.StandardOpenOption.CREATE,
+                                        java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+                                )
+                ) {
+                    out.write(newHeader);
+                    out.write(newTimestamps);
+                    out.write(payloadStream.toByteArray());
+                }
+
+                try {
+                    java.nio.file.Files.move(
+                            temporary,
+                            file,
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                            java.nio.file.StandardCopyOption.ATOMIC_MOVE
+                    );
+                } catch (
+                        java.nio.file.AtomicMoveNotSupportedException exception
+                ) {
+                    java.nio.file.Files.move(
+                            temporary,
+                            file,
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                    );
                 }
 
             } finally {
