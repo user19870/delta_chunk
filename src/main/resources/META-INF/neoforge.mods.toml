@@ -4,7 +4,7 @@ loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
 [[mods]]
-modId="deltachunk"
+modId="delta_chunk"
 version="0.1.0"
 displayName="Delta Chunk"
 authors="user19870"
