@@ -1,4 +1,4 @@
-package com.deltachunk;
+ package com.deltachunk;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -179,6 +179,18 @@ public final class DeltaChunk {
             ServerStoppingEvent event
     ) {
 
+        /*
+         * DIAGNOSTIC LOG - always fires first, before any null
+         * check or early return below. If you don't see this line
+         * in the log after quitting to title / stopping the server,
+         * ServerStoppingEvent itself is not firing for your setup,
+         * and the problem is timing/event registration, not the
+         * compaction logic further down.
+         */
+        LOGGER.info(
+                "[DeltaChunk][DIAG] onServerStopping fired."
+        );
+
         MinecraftServer server =
                 event.getServer();
 
@@ -187,6 +199,13 @@ public final class DeltaChunk {
 
         Set<String> modified =
                 MODIFIED.get(server);
+
+        LOGGER.info(
+                "[DeltaChunk][DIAG] store={} modified={} (size={})",
+                store != null,
+                modified != null,
+                modified == null ? -1 : modified.size()
+        );
 
         if (store == null || modified == null) {
 
@@ -272,20 +291,46 @@ public final class DeltaChunk {
                 continue;
             }
 
+            /*
+             * DIAGNOSTIC LOG - confirms whether the path we computed
+             * actually exists on disk. If this prints "exists=false"
+             * for a dimension you know has region files, the path
+             * resolution logic in resolveRegionDir() is wrong for
+             * your setup and compaction is silently doing nothing.
+             */
+            LOGGER.info(
+                    "[DeltaChunk][DIAG] dimension={} resolvedRegionDir={} exists={}",
+                    dimension,
+                    regionDir,
+                    java.nio.file.Files.isDirectory(regionDir)
+            );
+
             try {
 
-                RegionCompactor.compactDimension(
-                        regionDir,
-                        (chunkX, chunkZ) ->
-                                modified.contains(
-                                        dimension + "|" + chunkX + "|" + chunkZ
-                                )
-                );
+                RegionCompactor.CompactionStats stats =
+                        RegionCompactor.compactDimension(
+                                regionDir,
+                                (chunkX, chunkZ) ->
+                                        modified.contains(
+                                                dimension + "|" + chunkX + "|" + chunkZ
+                                        )
+                        );
 
+                /*
+                 * DIAGNOSTIC LOG - this is the number that actually
+                 * tells you whether compaction is doing anything.
+                 * If entriesStripped is 0 every time, either every
+                 * chunk you've generated is genuinely in the
+                 * modified set (over-marking, see onPiston's 5x5x5
+                 * blast radius, or right-click interact marking
+                 * whole chunks too eagerly), or the modified set
+                 * lookup key doesn't match (dimension id mismatch).
+                 */
                 LOGGER.info(
-                        "[DeltaChunk] Compacted region files for {} ({}).",
+                        "[DeltaChunk][DIAG] Compacted {} ({}): {}",
                         dimension,
-                        regionDir
+                        regionDir,
+                        stats
                 );
 
             } catch (IOException exception) {
