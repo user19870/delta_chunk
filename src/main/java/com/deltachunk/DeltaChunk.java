@@ -7,6 +7,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.LevelAccessor;
+
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -193,23 +195,24 @@ public final class DeltaChunk {
         );
     }
 
-    private void mark(Level level, BlockPos pos) {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        MinecraftServer server = serverLevel.getServer();
-
-        Set<Long> modified = MODIFIED.get(server);
-
-        if (modified == null) {
-            return;
-        }
-
-        long chunkKey = new net.minecraft.world.level.ChunkPos(pos).toLong();
-
-        modified.add(chunkKey);
+    private void mark(LevelAccessor level, BlockPos pos) {
+    if (!(level instanceof ServerLevel serverLevel)) {
+        return;
     }
+
+    MinecraftServer server = serverLevel.getServer();
+
+    Set<Long> modified = MODIFIED.get(server);
+
+    if (modified == null) {
+        return;
+    }
+
+    long chunkKey = new net.minecraft.world.level.ChunkPos(pos).toLong();
+
+    modified.add(chunkKey);
+}
+    
 
     private static MinecraftServer findServer(ChunkAccess chunk) {
         if (chunk instanceof LevelChunk levelChunk) {
