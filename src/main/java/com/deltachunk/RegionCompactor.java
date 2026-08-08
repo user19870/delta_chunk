@@ -55,13 +55,15 @@ public final class RegionCompactor {
      * @param keepPredicate returns true if the given chunk must be
      *                      kept (i.e. it was modified by the player)
      */
-    public static void compactDimension(
+    public static CompactionStats compactDimension(
             Path regionDir,
             ChunkKeepPredicate keepPredicate
     ) throws IOException {
 
+        CompactionStats total = new CompactionStats();
+
         if (!Files.isDirectory(regionDir)) {
-            return;
+            return total;
         }
 
         try (Stream<Path> files = Files.list(regionDir)) {
@@ -78,22 +80,53 @@ public final class RegionCompactor {
                 int regionX = Integer.parseInt(matcher.group(1));
                 int regionZ = Integer.parseInt(matcher.group(2));
 
-                compactRegionFile(
-                        file,
-                        regionX,
-                        regionZ,
-                        keepPredicate
-                );
+                CompactionStats fileStats =
+                        compactRegionFile(
+                                file,
+                                regionX,
+                                regionZ,
+                                keepPredicate
+                        );
+
+                total.filesScanned += 1;
+                total.entriesKept += fileStats.entriesKept;
+                total.entriesStripped += fileStats.entriesStripped;
+                total.entriesAlreadyAbsent += fileStats.entriesAlreadyAbsent;
             }
+        }
+
+        return total;
+    }
+
+    /**
+     * Simple mutable counter bag returned to the caller so it can
+     * log what actually happened, instead of this class silently
+     * doing work with no visibility from the outside.
+     */
+    public static final class CompactionStats {
+        public int filesScanned = 0;
+        public int entriesKept = 0;
+        public int entriesStripped = 0;
+        public int entriesAlreadyAbsent = 0;
+
+        @Override
+        public String toString() {
+            return "CompactionStats{filesScanned=" + filesScanned +
+                    ", entriesKept=" + entriesKept +
+                    ", entriesStripped=" + entriesStripped +
+                    ", entriesAlreadyAbsent=" + entriesAlreadyAbsent +
+                    "}";
         }
     }
 
-    private static void compactRegionFile(
+    private static CompactionStats compactRegionFile(
             Path file,
             int regionX,
             int regionZ,
             ChunkKeepPredicate keepPredicate
     ) throws IOException {
+
+        CompactionStats stats = new CompactionStats();
 
         try (
                 RandomAccessFile raf =
@@ -103,7 +136,7 @@ public final class RegionCompactor {
 
             if (channel.size() < HEADER_BYTES) {
                 // Malformed / empty region file, nothing to do.
-                return;
+                return stats;
             }
 
             FileLock lock = channel.lock();
@@ -128,6 +161,7 @@ public final class RegionCompactor {
 
                     if (offsetEntry == 0 && sectorCount == 0) {
                         // Already absent, nothing to strip.
+                        stats.entriesAlreadyAbsent += 1;
                         continue;
                     }
 
@@ -144,6 +178,7 @@ public final class RegionCompactor {
                             );
 
                     if (keep) {
+                        stats.entriesKept += 1;
                         continue;
                     }
 
@@ -154,6 +189,7 @@ public final class RegionCompactor {
                     header[index * 4 + 2] = 0;
                     header[index * 4 + 3] = 0;
 
+                    stats.entriesStripped += 1;
                     changed = true;
                 }
 
@@ -165,6 +201,8 @@ public final class RegionCompactor {
             } finally {
                 lock.release();
             }
+
+            return stats;
         }
     }
 
