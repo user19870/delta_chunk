@@ -11,7 +11,8 @@ authors="user19870"
 description='''
 Single-player procedural world storage using WAM files.
 '''
-
+[[mixins]]
+config="deltachunk.mixins.json"
 
  
 [[dependencies.deltachunk]]
