@@ -1,7 +1,7 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
+loaderVersion="[1,)"
 
-license="${mod_license}"
+license="MIT"
 
 [[mods]]
 modId="delta_chunk"
@@ -14,16 +14,16 @@ Single-player procedural world storage using WAM files.
 
 
  
-[[dependencies.${mod_id}]]
+[[dependencies.delta_chunk]]
 modId="neoforge"
 type="required"
-versionRange="${neo_version}"
+versionRange="[21,)"
 ordering="NONE"
 side="BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.delta_chunk]]
 modId="minecraft"
 type="required"
-versionRange="${minecraft_version_range}"
+versionRange="[1,)"
 ordering="NONE"
 side="BOTH"
