@@ -12,7 +12,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Post-process compactor for Anvil (.mca) region files.
  *
@@ -51,9 +52,12 @@ public final class RegionCompactor {
     private static final int SECTOR_BYTES = 4096;
     private static final int HEADER_BYTES = SECTOR_BYTES; // offsets table
     private static final int CHUNKS_PER_REGION = 1024; // 32 * 32
+    
 
     private static final Pattern REGION_FILE_PATTERN =
             Pattern.compile("r\\.(-?\\d+)\\.(-?\\d+)\\.mca");
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(RegionCompactor.class);
 
     private RegionCompactor() {
     }
@@ -80,30 +84,39 @@ public final class RegionCompactor {
         try (Stream<Path> files = Files.list(regionDir)) {
 
             for (Path file : files.toList()) {
+    String name = file.getFileName().toString();
+    Matcher matcher = REGION_FILE_PATTERN.matcher(name);
 
-                String name = file.getFileName().toString();
-                Matcher matcher = REGION_FILE_PATTERN.matcher(name);
+    if (!matcher.matches()) {
+        continue;
+    }
 
-                if (!matcher.matches()) {
-                    continue;
-                }
+    int regionX = Integer.parseInt(matcher.group(1));
+    int regionZ = Integer.parseInt(matcher.group(2));
 
-                int regionX = Integer.parseInt(matcher.group(1));
-                int regionZ = Integer.parseInt(matcher.group(2));
+    try {
+        CompactionStats fileStats =
+                compactRegionFile(
+                        file,
+                        regionX,
+                        regionZ,
+                        keepPredicate
+                );
 
-                CompactionStats fileStats =
-                        compactRegionFile(
-                                file,
-                                regionX,
-                                regionZ,
-                                keepPredicate
-                        );
+        total.filesScanned++;
+        total.entriesKept += fileStats.entriesKept;
+        total.entriesStripped += fileStats.entriesStripped;
+        total.entriesAlreadyAbsent += fileStats.entriesAlreadyAbsent;
 
-                total.filesScanned += 1;
-                total.entriesKept += fileStats.entriesKept;
-                total.entriesStripped += fileStats.entriesStripped;
-                total.entriesAlreadyAbsent += fileStats.entriesAlreadyAbsent;
-            }
+    } catch (IOException exception) {
+        LOGGER.warn(
+                "[DeltaChunk] Could not compact region {}. " +
+                "Leaving original MCA untouched.",
+                file,
+                exception
+        );
+    }
+}
         }
 
         return total;
