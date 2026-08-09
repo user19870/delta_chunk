@@ -197,7 +197,7 @@ public final class WindowsSafeIO {
      * will show a `.tmp` file sitting next to the target, which is
      * recoverable by hand if it ever happens.
      */
- ```java
+ 
 private static void replaceWithRetry(
         Path temporary,
         Path target
@@ -348,7 +348,7 @@ private static void replaceWithRetry(
 
     throw lastFailure;
 }
-```
+ 
 
 
     private static void sleep(int millis) {
