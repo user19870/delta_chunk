@@ -152,6 +152,32 @@ public final class RegionCompactor {
 
         CompactionStats stats = new CompactionStats();
 
+        byte[] newHeader = new byte[HEADER_BYTES];
+        byte[] newTimestamps = new byte[HEADER_BYTES];
+        java.io.ByteArrayOutputStream payloadStream =
+                new java.io.ByteArrayOutputStream();
+        boolean somethingChanged;
+
+        /*
+         * READ PHASE.
+         *
+         * Everything we need from the original file is read here.
+         * This try-with-resources block (and therefore the file
+         * handle / lock on the original file) is fully closed
+         * before we touch the filesystem again below.
+         *
+         * IMPORTANT (Windows): on Windows, you cannot rename/replace
+         * a file that this process still has open, even via a
+         * separate RandomAccessFile/FileChannel instance -- doing so
+         * throws AccessDeniedException. A previous version of this
+         * method called Files.move() while `raf`/`channel` below
+         * were still open (inside this try-with-resources block),
+         * which is exactly what triggered that error on Windows.
+         * Keeping the read and the move in two separate scopes, with
+         * the try-with-resources fully exited in between, is what
+         * fixes it. DO NOT move the temp-file write or Files.move()
+         * calls back inside this try block.
+         */
         try (
                 RandomAccessFile raf =
                         new RandomAccessFile(file.toFile(), "rw");
@@ -176,9 +202,8 @@ public final class RegionCompactor {
 
                 /*
                  * Decide, per slot, whether to keep it, and if so,
-                 * read its actual payload bytes NOW (before we start
-                 * writing anything), since we're about to build an
-                 * entirely new file layout.
+                 * read its actual payload bytes NOW (while the file
+                 * is still open for reading).
                  *
                  * A chunk's payload on disk is:
                  *   [4 bytes length][1 byte compression type][length-1 bytes data]
@@ -276,9 +301,11 @@ public final class RegionCompactor {
                     keptPayloads[index] = fullRecord;
                 }
 
-                boolean nothingKept = stats.entriesKept == 0;
+                somethingChanged =
+                        stats.entriesKept > 0
+                        || stats.entriesStripped > 0;
 
-                if (nothingKept && stats.entriesStripped == 0) {
+                if (!somethingChanged) {
                     // Nothing changed at all, no need to touch the
                     // file further (avoids pointless rewrites on
                     // every single shutdown for untouched regions).
@@ -286,19 +313,15 @@ public final class RegionCompactor {
                 }
 
                 /*
-                 * Build the new file layout in memory:
+                 * Build the new file layout in memory (still inside
+                 * the read scope, since we still need `timestamps`
+                 * here, but this does NOT touch the filesystem yet):
                  *   header (4096) + timestamps (4096) + payloads,
                  * sector-aligned, in slot order. Slot order (rather
                  * than original disk order) keeps this simple and
                  * deterministic; region files don't require payloads
                  * to be in any particular order.
                  */
-                byte[] newHeader = new byte[HEADER_BYTES];
-                byte[] newTimestamps = new byte[HEADER_BYTES];
-
-                java.io.ByteArrayOutputStream payloadStream =
-                        new java.io.ByteArrayOutputStream();
-
                 int nextSector = 2; // sectors 0-1 are header+timestamps
 
                 for (int index = 0; index < CHUNKS_PER_REGION; index++) {
@@ -356,47 +379,60 @@ public final class RegionCompactor {
                     nextSector += sectorsNeeded;
                 }
 
-                Path temporary =
-                        file.resolveSibling(
-                                file.getFileName() + ".compact.tmp"
-                        );
-
-                try (
-                        java.io.OutputStream out =
-                                java.nio.file.Files.newOutputStream(
-                                        temporary,
-                                        java.nio.file.StandardOpenOption.CREATE,
-                                        java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
-                                )
-                ) {
-                    out.write(newHeader);
-                    out.write(newTimestamps);
-                    out.write(payloadStream.toByteArray());
-                }
-
-                try {
-                    java.nio.file.Files.move(
-                            temporary,
-                            file,
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-                            java.nio.file.StandardCopyOption.ATOMIC_MOVE
-                    );
-                } catch (
-                        java.nio.file.AtomicMoveNotSupportedException exception
-                ) {
-                    java.nio.file.Files.move(
-                            temporary,
-                            file,
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                    );
-                }
-
             } finally {
                 lock.release();
             }
 
-            return stats;
         }
+        // <-- try-with-resources fully exited here: `raf` and
+        //     `channel` are closed and the original file handle is
+        //     released. It is now safe to replace the file on disk,
+        //     including on Windows. DO NOT move the code below back
+        //     inside the block above.
+
+        /*
+         * WRITE + REPLACE PHASE.
+         *
+         * The original file is fully closed by this point. Build the
+         * replacement in a temp file, then atomically move it over
+         * the original.
+         */
+        Path temporary =
+                file.resolveSibling(
+                        file.getFileName() + ".compact.tmp"
+                );
+
+        try (
+                java.io.OutputStream out =
+                        java.nio.file.Files.newOutputStream(
+                                temporary,
+                                java.nio.file.StandardOpenOption.CREATE,
+                                java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+                        )
+        ) {
+            out.write(newHeader);
+            out.write(newTimestamps);
+            out.write(payloadStream.toByteArray());
+        }
+
+        try {
+            java.nio.file.Files.move(
+                    temporary,
+                    file,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE
+            );
+        } catch (
+                java.nio.file.AtomicMoveNotSupportedException exception
+        ) {
+            java.nio.file.Files.move(
+                    temporary,
+                    file,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+        }
+
+        return stats;
     }
 
     private static int readInt24(byte[] data, int offset) {
