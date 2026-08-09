@@ -197,100 +197,159 @@ public final class WindowsSafeIO {
      * will show a `.tmp` file sitting next to the target, which is
      * recoverable by hand if it ever happens.
      */
-    private static void replaceWithRetry(
-            Path temporary,
-            Path target
-    ) throws IOException {
+ ```java
+private static void replaceWithRetry(
+        Path temporary,
+        Path target
+) throws IOException {
 
-        IOException lastFailure = null;
+    IOException lastFailure = null;
 
-        for (int attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    for (int attempt = 0;
+         attempt <= RETRY_DELAYS_MS.length;
+         attempt++) {
 
-            try {
+        try {
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT use ATOMIC_MOVE here.
+             *
+             * The requested Windows-safe sequence is:
+             *
+             *   1. Delete existing .mca
+             *   2. Confirm .mca is gone
+             *   3. Rename .mca.tmp -> .mca
+             *   4. Confirm new .mca exists
+             *
+             * This avoids relying on Windows' implementation-specific
+             * behavior when ATOMIC_MOVE targets an existing file.
+             */
 
-                try {
+            /*
+             * Step 1:
+             * Delete the old target if it exists.
+             */
+            if (Files.exists(target)) {
+                Files.delete(target);
 
-                    Files.move(
-                            temporary,
-                            target,
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.ATOMIC_MOVE
-                    );
+                LOGGER.debug(
+                        "[DeltaChunk] Deleted old target: {}",
+                        target
+                );
+            }
 
-                } catch (AtomicMoveNotSupportedException notAtomic) {
+            /*
+             * Step 2:
+             * Make absolutely sure the old .mca is gone before
+             * attempting the rename.
+             *
+             * This is intentionally checked separately instead of
+             * relying on delete() returning successfully.
+             */
+            if (Files.exists(target)) {
+                throw new IOException(
+                        "Target still exists after delete: " + target
+                );
+            }
 
-                    /*
-                     * Some filesystems (notably moving across
-                     * different drives/volumes) don't support
-                     * ATOMIC_MOVE at all. This is not the
-                     * Windows-file-lock problem this method exists
-                     * to solve, so fall back to a plain replace
-                     * once, without consuming a retry slot for it.
-                     */
-                    Files.move(
-                            temporary,
-                            target,
-                            StandardCopyOption.REPLACE_EXISTING
-                    );
-                }
+            /*
+             * Step 3:
+             * Rename the fully-written .tmp file to .mca.
+             *
+             * No REPLACE_EXISTING is needed because we explicitly
+             * removed the old target above.
+             */
+            Files.move(
+                    temporary,
+                    target
+            );
 
-                if (attempt > 0) {
+            /*
+             * Step 4:
+             * Verify that the replacement really exists.
+             */
+            if (!Files.exists(target)) {
+                throw new IOException(
+                        "Target does not exist after replacement: " + target
+                );
+            }
 
-                    LOGGER.info(
-                            "[DeltaChunk] File replace for {} succeeded " +
-                            "after {} retr{}.",
-                            target.getFileName(),
-                            attempt,
-                            attempt == 1 ? "y" : "ies"
-                    );
-                }
+            LOGGER.info(
+                    "[DeltaChunk] Successfully replaced {} using " +
+                    "delete-then-rename.",
+                    target.getFileName()
+            );
 
-                return;
+            return;
 
-            } catch (
-                    java.nio.file.FileSystemException lockException
-            ) {
+        } catch (java.nio.file.FileSystemException lockException) {
 
-                /*
-                 * This is the transient-Windows-lock case this class
-                 * exists for: AccessDeniedException is a subclass of
-                 * FileSystemException, and other FileSystemException
-                 * variants (e.g. "being used by another process")
-                 * show up here too depending on JDK/platform. Retry.
-                 */
-                lastFailure = lockException;
+            /*
+             * Windows may still have a handle open on the old .mca
+             * for a short period after the world has unloaded.
+             *
+             * Retry the entire sequence:
+             *
+             *     delete -> verify -> rename -> verify
+             *
+             * rather than retrying only Files.move().
+             */
+            lastFailure = lockException;
 
-                if (attempt < RETRY_DELAYS_MS.length) {
+            if (attempt < RETRY_DELAYS_MS.length) {
 
-                    LOGGER.warn(
-                            "[DeltaChunk] File replace for {} failed " +
-                            "(attempt {}/{}), likely another process " +
-                            "briefly has it open (antivirus, indexer, " +
-                            "backup tool). Retrying in {} ms.",
-                            target.getFileName(),
-                            attempt + 1,
-                            RETRY_DELAYS_MS.length + 1,
-                            RETRY_DELAYS_MS[attempt]
-                    );
+                LOGGER.warn(
+                        "[DeltaChunk] Waiting for Windows file " +
+                        "handles to be released for {} " +
+                        "(attempt {}/{}). Retrying in {} ms. " +
+                        "Reason: {}",
+                        target.getFileName(),
+                        attempt + 1,
+                        RETRY_DELAYS_MS.length + 1,
+                        RETRY_DELAYS_MS[attempt],
+                        lockException.getMessage()
+                );
 
-                    sleep(RETRY_DELAYS_MS[attempt]);
-                }
+                sleep(RETRY_DELAYS_MS[attempt]);
+            }
+
+        } catch (IOException ioException) {
+
+            lastFailure = ioException;
+
+            if (attempt < RETRY_DELAYS_MS.length) {
+
+                LOGGER.warn(
+                        "[DeltaChunk] File replacement for {} failed " +
+                        "(attempt {}/{}). Retrying in {} ms. " +
+                        "Reason: {}",
+                        target.getFileName(),
+                        attempt + 1,
+                        RETRY_DELAYS_MS.length + 1,
+                        RETRY_DELAYS_MS[attempt],
+                        ioException.getMessage()
+                );
+
+                sleep(RETRY_DELAYS_MS[attempt]);
             }
         }
-
-        LOGGER.error(
-                "[DeltaChunk] File replace for {} failed after {} " +
-                "attempts. Leaving the fully-written temp file at {} " +
-                "so no data is lost; the original file at the target " +
-                "path (if any) is unchanged.",
-                target.getFileName(),
-                RETRY_DELAYS_MS.length + 1,
-                temporary,
-                lastFailure
-        );
-
-        throw lastFailure;
     }
+
+    LOGGER.error(
+            "[DeltaChunk] Failed to replace {} after {} attempts. " +
+            "The temporary file has deliberately been preserved at {} " +
+            "to prevent data loss.",
+            target.getFileName(),
+            RETRY_DELAYS_MS.length + 1,
+            temporary,
+            lastFailure
+    );
+
+    throw lastFailure;
+}
+```
+
 
     private static void sleep(int millis) {
 
