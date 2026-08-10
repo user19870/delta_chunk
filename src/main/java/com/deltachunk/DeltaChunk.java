@@ -23,6 +23,7 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.level.PistonEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
@@ -111,6 +112,30 @@ public final class DeltaChunk {
         NeoForge.EVENT_BUS.addListener(this::onPlayerInteract);
 
         NeoForge.EVENT_BUS.addListener(this::onChunkLoad);
+
+        NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
+    }
+
+    /**
+     * Registers /deltachunk add|delete, letting a player manually
+     * add or remove WAM entries for a coordinate range in-game
+     * without needing to physically break/place every block.
+     * See DeltaCommand for the full behavior of each subcommand.
+     */
+    private void onRegisterCommands(RegisterCommandsEvent event) {
+
+        DeltaCommand.register(event.getDispatcher());
+    }
+
+    /**
+     * Package-visible accessor so DeltaCommand can reach the active
+     * WamStore for a running server without this mod needing a
+     * separate service-locator class. Returns null if called outside
+     * an active session (should not normally happen, since commands
+     * can only run while a server/world is up).
+     */
+    static WamStore getStore(MinecraftServer server) {
+        return STORES.get(server);
     }
 
     // ------------------------------------------------------------
