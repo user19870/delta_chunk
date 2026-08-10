@@ -124,6 +124,62 @@ public final class WamStore {
         }
     }
 
+     public void removeRegion(
+            String dimension,
+            int regionX,
+            int regionZ,
+            java.util.Set<Long> positionsToRemove
+    ) throws IOException {
+ 
+        if (positionsToRemove.isEmpty()) {
+            return;
+        }
+ 
+        Path file =
+                regionFile(dimension, regionX, regionZ);
+ 
+        Object lock =
+                fileLocks.computeIfAbsent(
+                        file,
+                        key -> new Object()
+                );
+ 
+        synchronized (lock) {
+ 
+            if (!Files.exists(file)) {
+                return;
+            }
+ 
+            Map<Long, BlockDelta> existing = read(file);
+ 
+            boolean anyRemoved = false;
+ 
+            for (Long pos : positionsToRemove) {
+ 
+                if (existing.remove(pos) != null) {
+                    anyRemoved = true;
+                }
+            }
+ 
+            if (!anyRemoved) {
+                return;
+            }
+ 
+            if (existing.isEmpty()) {
+ 
+                Files.deleteIfExists(file);
+ 
+                return;
+            }
+ 
+            WindowsSafeIO.writeAtomic(
+                    file,
+                    (WindowsSafeIO.DataStreamWriter)
+                            out -> write(out, existing)
+            );
+        }
+    }
+
     /**
      * Load every recorded delta for a single chunk. Never returns
      * null; returns an empty map if the region file doesn't exist or
