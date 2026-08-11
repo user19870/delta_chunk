@@ -5,9 +5,10 @@ license="MIT"
 
 [[mods]]
 modId="deltachunk"
-version="0.1.0"
+version="0.2.0"
 displayName="Delta Chunk"
 authors="user19870"
+logoFile = "DeltaChunk.png"
 description='''
 Single-player procedural world storage using WAM files.
 '''
