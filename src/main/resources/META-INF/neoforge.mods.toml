@@ -10,7 +10,7 @@ displayName="Delta Chunk"
 authors="user19870"
 logoFile = "DeltaChunk.png"
 description='''
-Single-player procedural world storage using WAM files.
+Save chunk as small as possible to reduce world size but try to use original mca region
 '''
  
 
