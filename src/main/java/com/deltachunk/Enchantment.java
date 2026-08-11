@@ -45,17 +45,21 @@ public final class Enchantment {
                     )
             );
     //add to Tabs
-  @SubscribeEvent
+@SubscribeEvent
 public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
         return;
     }
 
     Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
-            BuiltInRegistries.ENCHANTMENT.getHolderOrThrow(DELTA_ADD);
+            event.getRegistries()
+                    .lookupOrThrow(Registries.ENCHANTMENT)
+                    .getOrThrow(DELTA_ADD);
 
     Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
-            BuiltInRegistries.ENCHANTMENT.getHolderOrThrow(DELTA_DELETE);
+            event.getRegistries()
+                    .lookupOrThrow(Registries.ENCHANTMENT)
+                    .getOrThrow(DELTA_DELETE);
 
     ItemStack deltaAddBook = new ItemStack(Items.ENCHANTED_BOOK);
     ItemStack deltaDeleteBook = new ItemStack(Items.ENCHANTED_BOOK);
