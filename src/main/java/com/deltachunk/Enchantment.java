@@ -55,8 +55,9 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         return;
     }
 
-    var enchantments = event.getRegistries()
-            .lookupOrThrow(Registries.ENCHANTMENT);
+    var enchantments = event.getParameters()
+        .holders()
+        .lookupOrThrow(Registries.ENCHANTMENT);
 
     Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
             enchantments.getOrThrow(DELTA_ADD);
