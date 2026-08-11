@@ -1,0 +1,11 @@
+ {
+   "enchantment.deltachunk.delta_add": "增量保存",
+   "enchantment.deltachunk.delta_delete": "增量丢弃",
+   "message.deltachunk.enchant_conflict":"[DeltaChunk] delta_add 与 delta_delete 不能同时使用。",
+   "message.deltachunk.firstpoint":"[DeltaChunk]已记录第 1 点：%s %s %s",
+   "message.deltachunk.waitfor2point":"[DeltaChunk] 请再次右键选择第 2 点。",
+   "message.deltachunk.secondpoint":"[DeltaChunk]已记录第 2 点：%s %s %s",
+   "message.deltachunk.removeSuccess":"[DeltaChunk] 移除  %s个WAM 纪录点\n共包含%s个region的档案(没被记录/取消纪录将不被保存)。",
+   "message.deltachunk.addSuccess":"[DeltaChunk] 纪录 %s个方块到 WAM 共包含 %s个region的档案\n被保存的点将在下次復原。"
+
+}
