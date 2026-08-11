@@ -109,9 +109,9 @@ public final class Enchantment {
          */
         if (hasAdd && hasDelete) {
             player.sendSystemMessage(
-                    Component.literal(
-                            "§c[DeltaChunk] §fdelta_add 與 delta_delete 不能同時使用。"
-                    )
+                Component.translatable(
+            "message.deltachunk.enchant_conflict"
+        )
             );
 
             FIRST_POINTS.remove(player.getUUID());
@@ -131,20 +131,18 @@ public final class Enchantment {
             FIRST_POINTS.put(uuid, clickedPos);
 
             player.sendSystemMessage(
-                    Component.literal(
-                            "§a[DeltaChunk] §f已記錄第 1 點：§e"
-                                    + clickedPos.getX()
+ 
+                 Component.translatable("message.deltachunk.firstpoint"+ clickedPos.getX()
                                     + " "
                                     + clickedPos.getY()
                                     + " "
                                     + clickedPos.getZ()
-                    )
+                                       )
             );
 
             player.sendSystemMessage(
-                    Component.literal(
-                            "§7[DeltaChunk] §f請再次右鍵選擇第 2 點。"
-                    )
+ 
+                  Component.translatable("message.deltachunk.waitfor2point")
             );
 
             return;
@@ -156,14 +154,13 @@ public final class Enchantment {
         BlockPos second = clickedPos;
 
         player.sendSystemMessage(
-                Component.literal(
-                        "§a[DeltaChunk] §f已記錄第 2 點：§e"
-                                + second.getX()
-                                + " "
-                                + second.getY()
-                                + " "
-                                + second.getZ()
-                )
+          
+             Component.translatable("message.deltachunk.secondpoint"+ clickedPos.getX()
+                                    + " "
+                                    + clickedPos.getY()
+                                    + " "
+                                    + clickedPos.getZ()
+                                       )
         );
 
         /*
@@ -195,10 +192,7 @@ public final class Enchantment {
         }
 
         player.sendSystemMessage(
-                Component.literal(
-                        "§b[DeltaChunk] §f正在執行：§e/"
-                                + command
-                )
+                Component.literal(command)
         );
 
         /*
