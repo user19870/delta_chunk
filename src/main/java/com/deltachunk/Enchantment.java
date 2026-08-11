@@ -4,13 +4,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -42,28 +45,40 @@ public final class Enchantment {
                     )
             );
     //add to Tabs
-    @SubscribeEvent
+  @SubscribeEvent
 public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
         return;
     }
 
-    // Delta Add
-    ItemStack deltaAddBook = EnchantedBookItem.createForEnchantment(
-            new EnchantmentInstance(
-                    BuiltInRegistries.ENCHANTMENT.get(DELTA_ADD),
-                    1
-            )
-    );
-    event.accept(deltaAddBook);
+    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
+            BuiltInRegistries.ENCHANTMENT.getHolderOrThrow(DELTA_ADD);
 
-    // Delta Delete
-    ItemStack deltaDeleteBook = EnchantedBookItem.createForEnchantment(
-            new EnchantmentInstance(
-                    BuiltInRegistries.ENCHANTMENT.get(DELTA_DELETE),
-                    1
-            )
+    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
+            BuiltInRegistries.ENCHANTMENT.getHolderOrThrow(DELTA_DELETE);
+
+    ItemStack deltaAddBook = new ItemStack(Items.ENCHANTED_BOOK);
+    ItemStack deltaDeleteBook = new ItemStack(Items.ENCHANTED_BOOK);
+
+    ItemEnchantments.Mutable addEnchantments =
+            new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+    addEnchantments.set(deltaAdd, 1);
+
+    ItemEnchantments.Mutable deleteEnchantments =
+            new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+    deleteEnchantments.set(deltaDelete, 1);
+
+    deltaAddBook.set(
+            DataComponents.STORED_ENCHANTMENTS,
+            addEnchantments.toImmutable()
     );
+
+    deltaDeleteBook.set(
+            DataComponents.STORED_ENCHANTMENTS,
+            deleteEnchantments.toImmutable()
+    );
+
+    event.accept(deltaAddBook);
     event.accept(deltaDeleteBook);
 }
 
