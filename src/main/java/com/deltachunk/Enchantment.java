@@ -24,7 +24,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@EventBusSubscriber(modid = DeltaChunk.MOD_ID,bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(
+        modid = DeltaChunk.MOD_ID,
+        bus = EventBusSubscriber.Bus.MOD
+)
 public final class Enchantment {
 
     private static final ResourceKey<net.minecraft.world.item.enchantment.Enchantment> DELTA_ADD =
