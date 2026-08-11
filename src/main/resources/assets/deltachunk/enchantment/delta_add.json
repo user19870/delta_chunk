@@ -2,7 +2,8 @@
   "description": {
     "translate": "enchantment.deltachunk.delta_add"
   },
-  "supported_items": "#minecraft:enchantable/durability",
+  "supported_items": "#deltachunk:delta_items",
+  "primary_items": "#deltachunk:delta_items",
   "weight": 1,
   "max_level": 1,
   "min_cost": {
