@@ -51,7 +51,7 @@ public final class Enchantment {
  //tab
         @SubscribeEvent
 public static void addCreative(BuildCreativeModeTabContentsEvent event) {
-    if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
+    if (event.getTabKey() != CreativeModeTabs.COMBAT) {
         return;
     }
 
