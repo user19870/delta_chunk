@@ -25,8 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @EventBusSubscriber(
-        modid = DeltaChunk.MOD_ID,
-        bus = EventBusSubscriber.Bus.MOD
+        modid = DeltaChunk.MOD_ID
 )
 public final class Enchantment {
 
@@ -47,48 +46,7 @@ public final class Enchantment {
                             "delta_delete"
                     )
             );
-    //add to Tabs
-@SubscribeEvent
-public static void addCreative(BuildCreativeModeTabContentsEvent event) {
-    if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
-        return;
-    }
-
-    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
-            event.getRegistries()
-                    .lookupOrThrow(Registries.ENCHANTMENT)
-                    .getOrThrow(DELTA_ADD);
-
-    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
-            event.getRegistries()
-                    .lookupOrThrow(Registries.ENCHANTMENT)
-                    .getOrThrow(DELTA_DELETE);
-
-    ItemStack deltaAddBook = new ItemStack(Items.ENCHANTED_BOOK);
-    ItemStack deltaDeleteBook = new ItemStack(Items.ENCHANTED_BOOK);
-
-    ItemEnchantments.Mutable addEnchantments =
-            new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-    addEnchantments.set(deltaAdd, 1);
-
-    ItemEnchantments.Mutable deleteEnchantments =
-            new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-    deleteEnchantments.set(deltaDelete, 1);
-
-    deltaAddBook.set(
-            DataComponents.STORED_ENCHANTMENTS,
-            addEnchantments.toImmutable()
-    );
-
-    deltaDeleteBook.set(
-            DataComponents.STORED_ENCHANTMENTS,
-            deleteEnchantments.toImmutable()
-    );
-
-    event.accept(deltaAddBook);
-    event.accept(deltaDeleteBook);
-}
-
+ 
     /*
      * 每個玩家自己的第一點。
      *
