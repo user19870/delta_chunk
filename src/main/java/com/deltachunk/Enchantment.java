@@ -24,8 +24,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 @EventBusSubscriber(
-        modid = DeltaChunk.MOD_ID
+        modid = DeltaChunk.MOD_ID,
+        bus = EventBusSubscriber.Bus.MOD
 )
 public final class Enchantment {
 
@@ -46,7 +49,35 @@ public final class Enchantment {
                             "delta_delete"
                     )
             );
- 
+ //tab
+        @SubscribeEvent
+public static void addCreative(BuildCreativeModeTabContentsEvent event) {
+    if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
+        return;
+    }
+
+    var enchantments = event.getRegistries()
+            .lookupOrThrow(Registries.ENCHANTMENT);
+
+    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
+            enchantments.getOrThrow(DELTA_ADD);
+
+    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
+            enchantments.getOrThrow(DELTA_DELETE);
+
+    ItemStack deltaAddBook =
+            EnchantedBookItem.createForEnchantment(
+                    new EnchantmentInstance(deltaAdd, 1)
+            );
+
+    ItemStack deltaDeleteBook =
+            EnchantedBookItem.createForEnchantment(
+                    new EnchantmentInstance(deltaDelete, 1)
+            );
+
+    event.accept(deltaAddBook);
+    event.accept(deltaDeleteBook);
+}
     /*
      * 每個玩家自己的第一點。
      *
