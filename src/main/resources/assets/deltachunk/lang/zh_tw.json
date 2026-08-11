@@ -1,5 +1,8 @@
 {
    "enchantment.deltachunk.delta_add": "增量保存",
-  "enchantment.deltachunk.delta_delete": "增量丟棄"
-
+   "enchantment.deltachunk.delta_delete": "增量丟棄",
+   "message.deltachunk.enchant_conflict":"[DeltaChunk] delta_add 與 delta_delete 不能同時使用。",
+   "message.deltachunk.firstpoint":"[DeltaChunk]已記錄第 1 點：",
+   "message.deltachunk.waitfor2point":"[DeltaChunk] 請再次右鍵選擇第 2 點。",
+   "message.deltachunk.secondpoint":"[DeltaChunk]已記錄第 2 點："
 }
