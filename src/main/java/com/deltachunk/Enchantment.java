@@ -38,6 +38,31 @@ public final class Enchantment {
                             "delta_delete"
                     )
             );
+    //add to Tabs
+    @SubscribeEvent
+public static void addCreative(BuildCreativeModeTabContentsEvent event) {
+    if (event.getTabKey() != CreativeModeTabs.INGREDIENTS) {
+        return;
+    }
+
+    // Delta Add
+    ItemStack deltaAddBook = EnchantedBookItem.createForEnchantment(
+            new EnchantmentInstance(
+                    BuiltInRegistries.ENCHANTMENT.get(DELTA_ADD),
+                    1
+            )
+    );
+    event.accept(deltaAddBook);
+
+    // Delta Delete
+    ItemStack deltaDeleteBook = EnchantedBookItem.createForEnchantment(
+            new EnchantmentInstance(
+                    BuiltInRegistries.ENCHANTMENT.get(DELTA_DELETE),
+                    1
+            )
+    );
+    event.accept(deltaDeleteBook);
+}
 
     /*
      * 每個玩家自己的第一點。
