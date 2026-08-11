@@ -257,16 +257,7 @@ public final class DeltaCommand {
         long finalBlocksSnapshotted = blocksSnapshotted;
 
         source.sendSuccess(
-                () -> Component.literal(
-                        "[DeltaChunk] Recorded " +
-                        finalBlocksSnapshotted +
-                        " block(s) into WAM across " +
-                        regionsWritten +
-                        " region file(s). These positions will now " +
-                        "survive region compaction and be restored " +
-                        "on regeneration."
-                )
-            Component.translatable("message.deltachunk.addSuccess",finalBlocksSnapshotted,regionsWritten),
+                () -> Component.translatable("message.deltachunk.addSuccess",finalBlocksSnapshotted,regionsWritten),
                 true
         );
 
