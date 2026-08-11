@@ -132,12 +132,9 @@ public final class Enchantment {
 
             player.sendSystemMessage(
  
-                 Component.translatable("message.deltachunk.firstpoint"+ clickedPos.getX()
-                                    + " "
-                                    + clickedPos.getY()
-                                    + " "
-                                    + clickedPos.getZ()
-                                       )
+                 Component.translatable(
+                     "message.deltachunk.firstpoint", clickedPos.getX(), clickedPos.getY(),clickedPos.getZ()
+                                    )
             );
 
             player.sendSystemMessage(
@@ -155,11 +152,8 @@ public final class Enchantment {
 
         player.sendSystemMessage(
           
-             Component.translatable("message.deltachunk.secondpoint"+ clickedPos.getX()
-                                    + " "
-                                    + clickedPos.getY()
-                                    + " "
-                                    + clickedPos.getZ()
+             Component.translatable(
+                 "message.deltachunk.secondpoint", clickedPos.getX(), clickedPos.getY(),clickedPos.getZ()
                                        )
         );
 
