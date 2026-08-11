@@ -1,0 +1,5 @@
+{
+   "enchantment.deltachunk.delta_add": "增量保存",
+  "enchantment.deltachunk.delta_delete": "增量丟棄"
+
+}
