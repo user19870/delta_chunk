@@ -5,7 +5,7 @@
    "message.deltachunk.firstpoint":"[DeltaChunk]已記錄第 1 點：%s %s %s",
    "message.deltachunk.waitfor2point":"[DeltaChunk] 請再次右鍵選擇第 2 點。",
    "message.deltachunk.secondpoint":"[DeltaChunk]已記錄第 2 點：%s %s %s",
-   "message.deltachunk.removeSuccess":"[DeltaChunk] 移除  %s WAM 紀錄點\n共包含%sregion的檔案(沒被記錄/取消紀錄將不被保存)。",
+   "message.deltachunk.removeSuccess":"[DeltaChunk] 移除  %s個WAM 紀錄點\n共包含%s個region的檔案(沒被記錄/取消紀錄將不被保存)。",
    "message.deltachunk.addSuccess":"[DeltaChunk] 紀錄 %s個方塊到 WAM 共包含 %sregion的檔案\n被保存的點將在下次復原。"
 
 }
