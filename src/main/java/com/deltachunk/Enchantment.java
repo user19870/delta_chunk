@@ -27,8 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 @EventBusSubscriber(
-        modid = DeltaChunk.MOD_ID,
-        bus = EventBusSubscriber.Bus.MOD
+        modid = DeltaChunk.MOD_ID 
 )
 public final class Enchantment {
 
