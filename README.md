@@ -4,6 +4,7 @@
 * And still use `.mca` format
 * Support multi-mod modpack
 * use  commands to add or remove what should save
+* also has enchantments to use similar effect of following commands
 ```
 /deltachunk add x1 y1 z1 x2 y2 z2
 /deltachunk delete x1 y1 z2 x2 y2 z2
