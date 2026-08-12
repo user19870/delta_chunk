@@ -14,4 +14,4 @@
 **Backup your world before add this mod and use above commands to make sure your house in a old world would be saved.(only old world need that because my mod don't known these blocks are put by player or generator before you put/break them)**
 
 *   no-recommand to multi-player server because of protential bugs and using cpu resource to exchange region size is not cost-effective
-*   It is important to save the portal with `/deltachunk add` or any item with `delta add`enchantment
+*   It is important to save your portal with `break/put a blcok around the portal`, `/deltachunk add` or any item with `delta add`enchantment after entering an new dimension
