@@ -2,7 +2,7 @@ package com.deltachunk;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-import java.util.List;
+ 
 import java.util.Set;
 
 /**
@@ -30,7 +30,7 @@ public final class DeltaConfig {
 
     public static final ModConfigSpec SPEC;
 
-    private static final ModConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_DIMENSIONS;
+    private static final ModConfigSpec.ConfigValue<String> EXCLUDED_DIMENSIONS;
     
 
     static {
@@ -53,11 +53,7 @@ public final class DeltaConfig {
                         .translation(
                                 "config.deltachunk.excluded_dimensions"
                         )
-                        .defineListAllowEmpty(
-                                "excluded_dimensions",
-                                List.<String>of(),
-                                DeltaConfig::isPlausibleDimensionId
-                        );
+                        .define("excluded_dimensions", "");
 
         builder.pop();
 
@@ -82,32 +78,23 @@ public final class DeltaConfig {
      * had to move out of the text field's live validator.
      */
     public static boolean isExcluded(String dimension) {
+    String value = EXCLUDED_DIMENSIONS.get();
 
-        List<? extends String> excluded = EXCLUDED_DIMENSIONS.get();
-
-        if (excluded == null || excluded.isEmpty()) {
-            return false;
-        }
-
-        for (String entry : excluded) {
-
-            if (entry == null) {
-                continue;
-            }
-
-            String trimmed = entry.trim();
-
-            if (!looksLikeFinishedDimensionId(trimmed)) {
-                continue;
-            }
-
-            if (trimmed.equals(dimension)) {
-                return true;
-            }
-        }
-
+    if (value == null || value.isBlank()) {
         return false;
     }
+
+    for (String entry : value.split(",")) {
+        String trimmed = entry.trim();
+
+        if (looksLikeFinishedDimensionId(trimmed)
+                && trimmed.equals(dimension)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
     /**
      * @return an immutable snapshot of the currently configured
@@ -116,14 +103,25 @@ public final class DeltaConfig {
      */
     public static Set<String> excludedDimensionsSnapshot() {
 
-        List<? extends String> excluded = EXCLUDED_DIMENSIONS.get();
+    String value = EXCLUDED_DIMENSIONS.get();
 
-        if (excluded == null) {
-            return Set.of();
-        }
-
-        return Set.copyOf(excluded);
+    if (value == null || value.isBlank()) {
+        return Set.of();
     }
+
+    Set<String> result = new java.util.HashSet<>();
+
+    for (String entry : value.split(",")) {
+
+        String trimmed = entry.trim();
+
+        if (looksLikeFinishedDimensionId(trimmed)) {
+            result.add(trimmed);
+        }
+    }
+
+    return Set.copyOf(result);
+}
 
     /**
      * Validation for entries in the config screen's text field.
