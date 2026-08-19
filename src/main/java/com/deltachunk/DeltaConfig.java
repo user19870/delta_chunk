@@ -73,7 +73,12 @@ public final class DeltaConfig {
      * Comparison is a plain exact string match against whatever the
      * user typed in the config -- no wildcard/namespace-only
      * matching, to keep behavior predictable and match what the
-     * config comment tells the user to enter.
+     * config comment tells the user to enter. Entries that don't
+     * actually look like a finished "namespace:path" ID (e.g. a
+     * leftover stray entry from mid-edit, or one missing its colon)
+     * are simply skipped here rather than rejected at input time --
+     * see isPlausibleDimensionId's javadoc for why strict validation
+     * had to move out of the text field's live validator.
      */
     public static boolean isExcluded(String dimension) {
 
@@ -83,7 +88,24 @@ public final class DeltaConfig {
             return false;
         }
 
-        return excluded.contains(dimension);
+        for (String entry : excluded) {
+
+            if (entry == null) {
+                continue;
+            }
+
+            String trimmed = entry.trim();
+
+            if (!looksLikeFinishedDimensionId(trimmed)) {
+                continue;
+            }
+
+            if (trimmed.equals(dimension)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -103,13 +125,22 @@ public final class DeltaConfig {
     }
 
     /**
-     * Loose validation for entries typed into the config screen: must
-     * be non-blank and contain a single ':' separating namespace from
-     * path, matching the shape of every real dimension ID. This is
-     * intentionally not a hard registry lookup -- the config can be
-     * edited/loaded before other mods' dimensions are registered, and
-     * a config value shouldn't be rejected just because, say, a
-     * dimension-adding mod is temporarily uninstalled.
+     * Validation for entries in the config screen's text field.
+     *
+     * IMPORTANT: NeoForge's ConfigurationScreen re-runs this
+     * validator on every keystroke against the in-progress text, not
+     * just on the final committed value. A strict "must look like a
+     * complete namespace:path" check (as an earlier version of this
+     * method did) rejects every intermediate state while typing --
+     * e.g. the moment after typing "minecraft" but before the ':' is
+     * typed -- which made the text field appear to refuse input
+     * entirely. This validator is therefore deliberately permissive:
+     * it only rejects shapes that can NEVER be valid even as a
+     * finished value (blank text, or text containing whitespace,
+     * which no real ResourceLocation permits). The stricter
+     * "does this actually look like namespace:path" check is applied
+     * separately, at read time in isExcluded()/normalize(), where
+     * being strict doesn't interfere with typing.
      */
     private static boolean isPlausibleDimensionId(Object candidate) {
 
@@ -117,23 +148,41 @@ public final class DeltaConfig {
             return false;
         }
 
-        String trimmed = text.trim();
-
-        if (trimmed.isEmpty()) {
-            return false;
+        if (text.isEmpty()) {
+            // Allow typing to start from an empty field.
+            return true;
         }
 
-        int colonIndex = trimmed.indexOf(':');
+        for (int i = 0; i < text.length(); i++) {
 
-        if (colonIndex <= 0 || colonIndex == trimmed.length() - 1) {
-            return false;
-        }
-
-        if (trimmed.indexOf(':', colonIndex + 1) != -1) {
-            // More than one ':' -- not a valid namespace:path shape.
-            return false;
+            if (Character.isWhitespace(text.charAt(i))) {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    /**
+     * Strict "is this a complete namespace:path shape" check, used
+     * only when READING the config (isExcluded), never as the text
+     * field's live input validator. Safe to be strict here since a
+     * half-typed value simply won't match any real dimension yet,
+     * rather than blocking the keystroke that would have completed
+     * it.
+     */
+    private static boolean looksLikeFinishedDimensionId(String text) {
+
+        if (text.isEmpty()) {
+            return false;
+        }
+
+        int colonIndex = text.indexOf(':');
+
+        if (colonIndex <= 0 || colonIndex == text.length() - 1) {
+            return false;
+        }
+
+        return text.indexOf(':', colonIndex + 1) == -1;
     }
 }
