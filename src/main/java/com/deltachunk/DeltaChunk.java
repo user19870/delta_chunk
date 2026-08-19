@@ -28,6 +28,9 @@ import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
+import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,7 +99,7 @@ public final class DeltaChunk {
     private static final Map<MinecraftServer, DeltaIndex> INDICES =
             new ConcurrentHashMap<>();
 
-    public DeltaChunk(IEventBus modEventBus) {
+    public DeltaChunk(IEventBus modEventBus, ModContainer container) {
 
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(this::onServerStopped);
@@ -110,10 +113,23 @@ public final class DeltaChunk {
         NeoForge.EVENT_BUS.addListener(this::onExplosion);
         NeoForge.EVENT_BUS.addListener(this::onPiston);
         NeoForge.EVENT_BUS.addListener(this::onPlayerInteract);
-
+ 
         NeoForge.EVENT_BUS.addListener(this::onChunkLoad);
 
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
+        container.registerConfig(
+        net.neoforged.fml.config.ModConfig.Type.COMMON,
+        DeltaConfig.SPEC
+);
+
+container.registerExtensionPoint(
+        IConfigScreenFactory.class,
+        (modContainer, screen) ->
+                new net.neoforged.neoforge.client.gui.ConfigurationScreen(
+                        modContainer,
+                        screen
+                )
+);
     }
 
     /**
@@ -188,6 +204,11 @@ public final class DeltaChunk {
 
             return;
         }
+
+        //配置不生效維度
+        if (DeltaConfig.isExcluded(dimensionId(level))) {
+    return;
+}
 
         String dimension = dimensionId(level);
 
@@ -431,6 +452,9 @@ public final class DeltaChunk {
         ChunkAccess chunk = event.getChunk();
 
         ServerLevel level = getServerLevel(chunk);
+        if (DeltaConfig.isExcluded(dimensionId(level))) {
+    return;
+}
 
         if (level == null) {
             return;
@@ -715,6 +739,9 @@ public final class DeltaChunk {
         }
 
         MinecraftServer server = serverLevel.getServer();
+        if (DeltaConfig.isExcluded(dimensionId(serverLevel))) {
+    return;
+}
 
         DeltaIndex index = INDICES.get(server);
 
