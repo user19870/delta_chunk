@@ -31,6 +31,7 @@ public final class DeltaConfig {
     public static final ModConfigSpec SPEC;
 
     private static final ModConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_DIMENSIONS;
+    
 
     static {
 

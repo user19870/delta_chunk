@@ -29,6 +29,7 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
 import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import java.io.IOException;
@@ -121,6 +122,7 @@ public final class DeltaChunk {
         net.neoforged.fml.config.ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
+container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
 container.registerExtensionPoint(
         IConfigScreenFactory.class,
