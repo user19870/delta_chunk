@@ -53,7 +53,7 @@ public final class DeltaConfig {
                         .translation(
                                 "config.deltachunk.excluded_dimensions"
                         )
-                        .define("excluded_dimensions", "");
+                        .define("excluded_dimensions", "twilightforest:twilight_forest");
 
         builder.pop();
 
