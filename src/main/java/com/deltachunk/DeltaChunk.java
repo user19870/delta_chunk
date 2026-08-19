@@ -250,6 +250,35 @@ container.registerExtensionPoint(
                     exception
             );
         }
+         try {
+ 
+            /*
+             * Keep entities/*.mca in sync with region/*.mca: a chunk
+             * is kept or stripped in BOTH folders based on the exact
+             * same WAM-presence decision. No entity data is ever
+             * recorded into WAM itself -- entities are never
+             * diffed, replayed, or otherwise tracked by this mod.
+             * All this does is make sure that whenever
+             * compactDimension() above decides a chunk's block data
+             * can be thrown away (because nothing was ever recorded
+             * there), that chunk's entity data is thrown away at the
+             * same time, so the next load regenerates both together
+             * instead of ending up with orphaned/stale entities
+             * sitting in a chunk whose terrain was regenerated fresh.
+             * Conversely, any chunk kept by compactDimension() (because
+             * it has WAM data) has its entities left completely
+             * untouched here, exactly as before.
+             */
+            compactEntitiesDimension(server, level, store, dimension);
+ 
+        } catch (Exception exception) {
+ 
+            LOGGER.error(
+                    "[DeltaChunk] Entity region compaction failed for {}.",
+                    dimension,
+                    exception
+            );
+        }
     }
 
     private void onServerStopped(ServerStoppedEvent event) {
@@ -394,6 +423,75 @@ container.registerExtensionPoint(
         );
     }
 
+ private void compactEntitiesDimension(
+            MinecraftServer server,
+            ServerLevel level,
+            WamStore store,
+            String dimension
+    ) throws IOException {
+ 
+        Path entitiesDir = resolveEntitiesDir(server, level);
+ 
+        if (entitiesDir == null || !Files.isDirectory(entitiesDir)) {
+ 
+            /*
+             * Perfectly normal: not every dimension necessarily has
+             * an entities/ folder yet (e.g. a dimension that has
+             * never had any entity saved to disk), and some very old
+             * worlds or unusual dimension providers may not use the
+             * separated entity storage folder at all. Nothing to do
+             * in that case -- this is not an error.
+             */
+            return;
+        }
+ 
+        RegionCompactor.CompactionStats stats =
+                RegionCompactor.compactDimension(
+                        entitiesDir,
+                        (chunkX, chunkZ) -> {
+ 
+                            try {
+ 
+                                return store.hasAnyDeltaInChunk(
+                                        dimension,
+                                        new ChunkPos(chunkX, chunkZ)
+                                );
+ 
+                            } catch (IOException exception) {
+ 
+                                /*
+                                 * Same fail-safe policy as
+                                 * compactDimension(): if we can't
+                                 * determine whether a chunk has
+                                 * recorded WAM deltas, keep its
+                                 * entity data rather than risk
+                                 * discarding it.
+                                 */
+                                LOGGER.error(
+                                        "[DeltaChunk] Could not check " +
+                                        "WAM data for chunk {},{} in " +
+                                        "{} while compacting entities; " +
+                                        "keeping this chunk's entity " +
+                                        "data to be safe.",
+                                        chunkX,
+                                        chunkZ,
+                                        dimension,
+                                        exception
+                                );
+ 
+                                return true;
+                            }
+                        }
+                );
+ 
+        LOGGER.info(
+                "[DeltaChunk] Compacted entities for {}: {}",
+                dimension,
+                stats
+        );
+    }
+
+
     // ------------------------------------------------------------
     // Region directory resolution
     // ------------------------------------------------------------
@@ -428,6 +526,38 @@ container.registerExtensionPoint(
                 .resolve(path)
                 .resolve("region");
     }
+
+    private static Path resolveEntitiesDir(
+            MinecraftServer server,
+            ServerLevel level
+    ) {
+ 
+        Path worldRoot = server.getWorldPath(LevelResource.ROOT);
+ 
+        ResourceKey<Level> dimensionKey = level.dimension();
+ 
+        if (dimensionKey.equals(Level.OVERWORLD)) {
+            return worldRoot.resolve("entities");
+        }
+ 
+        if (dimensionKey.equals(Level.NETHER)) {
+            return worldRoot.resolve("DIM-1").resolve("entities");
+        }
+ 
+        if (dimensionKey.equals(Level.END)) {
+            return worldRoot.resolve("DIM1").resolve("entities");
+        }
+ 
+        String namespace = dimensionKey.location().getNamespace();
+        String path = dimensionKey.location().getPath();
+ 
+        return worldRoot
+                .resolve("dimensions")
+                .resolve(namespace)
+                .resolve(path)
+                .resolve("entities");
+    }
+ 
 
     // ------------------------------------------------------------
     // Chunk generation: replay recorded deltas onto new chunks
