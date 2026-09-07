@@ -23,10 +23,10 @@ jobs:
             parchment_minecraft: "1.21.3"
             parchment_mappings: "2024.12.07"
             java: "21"
-          - minecraft: "1.21.11"
-            neo: "21.11.45"
-            parchment_minecraft: "1.21.11"
-            parchment_mappings: "2025.12.20"
+          - minecraft: "1.21.4"
+            neo: "21.4.157"
+            parchment_minecraft: "1.21.4"
+            parchment_mappings: "2025.03.23"
             java: "21"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
