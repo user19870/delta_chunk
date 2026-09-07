@@ -1,6 +1,6 @@
 {
   "description": {
-    "translate": "enchantment.deltachunk.delta_add"
+    "translate": "enchantment.deltachunk.delta_delete"
   },
   "supported_items": "#minecraft:enchantable/durability",
   "weight": 1,
