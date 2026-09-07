@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.ServerExplosion;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -717,9 +718,11 @@ container.registerExtensionPoint(
          * final state to the next tick, once vanilla's explosion
          * block-removal pass has actually run.
          */
+        var explosion = (ServerExplosion) event.getExplosion();
+        
         var affected = java.util.List.copyOf(
-                event.getAffectedBlocks()
-        );
+        explosion.getToBlow()
+);
 
         level.getServer().execute(() -> {
 
