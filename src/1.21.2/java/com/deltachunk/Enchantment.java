@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -49,22 +48,7 @@ public final class Enchantment {
                             "delta_delete"
                     )
             );
-//1.21.2/3新增方法
-private static ItemStack createEnchantedBook(Holder<Enchantment> enchantment, int level) {
-    ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
-
-    ItemEnchantments.Mutable enchantments =
-            new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-    enchantments.set(enchantment, level);
-
-    book.set(
-            DataComponents.STORED_ENCHANTMENTS,
-            enchantments.toImmutable()
-    );
-
-    return book;
-}
-
+ 
 
  //tab
         @SubscribeEvent
@@ -82,9 +66,24 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
 
     Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
             enchantments.getOrThrow(DELTA_DELETE);
+//add books
+ItemStack deltaAddBook = new ItemStack(Items.ENCHANTED_BOOK);
+ItemEnchantments.Mutable addEnchantments =
+        new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+addEnchantments.set(deltaAdd, 1);
+deltaAddBook.set(
+        DataComponents.STORED_ENCHANTMENTS,
+        addEnchantments.toImmutable()
+);
 
-   ItemStack deltaAddBook = createEnchantedBook(deltaAdd, 1);
-ItemStack deltaDeleteBook = createEnchantedBook(deltaDelete, 1);
+ItemStack deltaDeleteBook = new ItemStack(Items.ENCHANTED_BOOK);
+ItemEnchantments.Mutable deleteEnchantments =
+        new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+deleteEnchantments.set(deltaDelete, 1);
+deltaDeleteBook.set(
+        DataComponents.STORED_ENCHANTMENTS,
+        deleteEnchantments.toImmutable()
+);
 
     event.accept(deltaAddBook);
     event.accept(deltaDeleteBook);
