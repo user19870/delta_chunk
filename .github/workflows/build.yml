@@ -17,12 +17,14 @@ jobs:
             neo: "21.1.244"
             parchment_minecraft: "1.21.1"
             parchment_mappings: "2024.11.17"
+            loader_version_range: "[1,)"
             java: "21"
 
           - minecraft: "1.21.2"
-            neo: "21.2.0"
+            neo: "21.2.1-beta"
             parchment_minecraft: "1.21.2"
-            parchment_mappings: "..."
+            parchment_mappings: "2024.11.17"
+            loader_version_range: "[1,)"
             java: "21"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
