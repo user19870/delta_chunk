@@ -82,14 +82,24 @@ neoForge {
         }
     }
 
-    mods {
-        // define mod <-> source bindings
-        // these are used to tell the game which sources are for which mod
-        // multi mod projects should define one per mod
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
+    def targetMinecraftVersion = project.findProperty("minecraft_version") ?: "1.21.1"
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/${targetMinecraftVersion}/java"]
+        }
+        resources {
+            srcDirs = ["src/${targetMinecraftVersion}/resources"]
         }
     }
+}
+
+mods {
+    "${mod_id}" {
+        sourceSet(sourceSets.main)
+    }
+}
 }
 
 // Sets up a dependency configuration called 'localRuntime'.
