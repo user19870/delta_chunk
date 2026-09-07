@@ -718,7 +718,7 @@ container.registerExtensionPoint(
          * block-removal pass has actually run.
          */
         var affected = java.util.List.copyOf(
-                event.getAffectedBlocks()
+                event.getExplosion().getToBlow()
         );
 
         level.getServer().execute(() -> {

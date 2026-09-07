@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.DataComponents;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 @EventBusSubscriber(
         modid = DeltaChunk.MOD_ID 
@@ -66,12 +66,12 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
             enchantments.getOrThrow(DELTA_DELETE);
 
     ItemStack deltaAddBook =
-            EnchantedBookItem.createForEnchantment(
+            DataComponents.WRITTEN_BOOK_CONTENT.createForEnchantment(
                     new EnchantmentInstance(deltaAdd, 1)
             );
 
     ItemStack deltaDeleteBook =
-            EnchantedBookItem.createForEnchantment(
+            DataComponents.WRITTEN_BOOK_CONTENT.createForEnchantment(
                     new EnchantmentInstance(deltaDelete, 1)
             );
 

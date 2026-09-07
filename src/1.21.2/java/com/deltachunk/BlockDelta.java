@@ -134,8 +134,7 @@ public final class BlockDelta {
 
             net.minecraft.commands.arguments.blocks.BlockStateParser.BlockResult result =
                     net.minecraft.commands.arguments.blocks.BlockStateParser.parseForBlock(
-                            net.minecraft.core.registries.BuiltInRegistries.BLOCK
-                                    .asLookup(),
+                            net.minecraft.core.registries.BuiltInRegistries.BLOCK,
                             serialized,
                             false
                     );
