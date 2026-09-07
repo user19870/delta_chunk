@@ -44,3 +44,9 @@ jobs:
           -Pneo_version=${{ matrix.neo }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
           -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: deltachunk-${{ github.sha }}
+          path: build/libs/*.jar
+          if-no-files-found: error
