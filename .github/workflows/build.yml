@@ -51,14 +51,9 @@ jobs:
       - name: Prepare mod JAR
         run: |
           mkdir -p artifacts
-          cp build/libs/*.jar "artifacts/deltachunk-${{ matrix.minecraft }}.jar"
+          cp build/libs/*.jar artifacts/
 
-      - name: Upload version JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: deltachunk-jar-${{ matrix.minecraft }}
-          path: artifacts/*.jar
-          if-no-files-found: error
+     
 
   package:
     needs: build
