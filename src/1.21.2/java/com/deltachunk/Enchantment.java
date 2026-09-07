@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -66,12 +67,12 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
             enchantments.getOrThrow(DELTA_DELETE);
 
     ItemStack deltaAddBook =
-            DataComponents.EnchantedBookItem.createForEnchantment(
+            EnchantedBookItem.createForEnchantment(
                     new EnchantmentInstance(deltaAdd, 1)
             );
 
     ItemStack deltaDeleteBook =
-            DataComponents.EnchantedBookItem.createForEnchantment(
+            EnchantedBookItem.createForEnchantment(
                     new EnchantmentInstance(deltaDelete, 1)
             );
 
