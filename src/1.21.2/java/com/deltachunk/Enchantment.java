@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.world.item.DataComponents;
+import net.minecraft.world.item.DataComponents.WRITTEN_BOOK_CONTENT;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 @EventBusSubscriber(
         modid = DeltaChunk.MOD_ID 
