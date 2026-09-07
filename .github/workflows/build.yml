@@ -9,32 +9,34 @@ permissions:
 
 jobs:
   build:
-    name: Build NeoForge 1.21.1 mod
-    runs-on: ubuntu-latest
+  strategy:
+      matrix:
+      include:
+        - minecraft: "1.21.1"
+         neo: "21.1.244"
+         parchment_minecraft: "1.21.1"
+         parchment_mappings: "2024.11.17"
+         java: "21"
 
+        - minecraft: "1.21.2"
+         neo: "21.2.0"
+         parchment_minecraft: "1.21.2"
+         parchment_mappings: "..."
+         java: "21"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
-
-      - name: Build
-        run: ./gradlew clean build --no-daemon
-
-      - name: Upload mod JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: deltachunk-${{ github.sha }}
-          path: build/libs/*.jar
-          if-no-files-found: error
+     -name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      java-version: ${{ matrix.java }}
+      distribution: temurin
+    steps:
+  - name: Build
+    run: |
+     ./gradlew build \
+      -Pminecraft_version=${{ matrix.minecraft }} \
+      -Pneo_version=${{ matrix.neo }} \
+      -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
+      -Pparchment_mappings_version=${{ matrix.parchment_mappings }} \
+      -Pjava_version=${{ matrix.java }}
+        
+ 
