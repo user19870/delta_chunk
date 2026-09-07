@@ -5,7 +5,7 @@ license="MIT"
 
 [[mods]]
 modId="deltachunk"
-version="0.2.0"
+version="0.2.1"
 displayName="Delta Chunk"
 authors="user19870"
 logoFile = "DeltaChunk.png"
