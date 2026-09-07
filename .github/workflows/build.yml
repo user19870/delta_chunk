@@ -1,42 +1,47 @@
-name: Build Delta Chunk
+name: Build Delta Chunk--multi_version
 
 on:
-  
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  build:
-  strategy:
-      matrix:
-      include:
-        - minecraft: "1.21.1"
-         neo: "21.1.244"
-         parchment_minecraft: "1.21.1"
-         parchment_mappings: "2024.11.17"
-         java: "21"
+  build: 
+    runs-on: ubuntu-latest
 
-        - minecraft: "1.21.2"
-         neo: "21.2.0"
-         parchment_minecraft: "1.21.2"
-         parchment_mappings: "..."
-         java: "21"
+    strategy:
+      matrix:
+        include:
+          - minecraft: "1.21.1"
+            neo: "21.1.244"
+            parchment_minecraft: "1.21.1"
+            parchment_mappings: "2024.11.17"
+            java: "21"
+
+          - minecraft: "1.21.2"
+            neo: "21.2.0"
+            parchment_minecraft: "1.21.2"
+            parchment_mappings: "..."
+            java: "21"
+
+    #  steps 只能出現一次，且與 strategy 靠左對齊
     steps:
-     -name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      java-version: ${{ matrix.java }}
-      distribution: temurin
-    steps:
-  - name: Build
-    run: |
-     ./gradlew build \
-      -Pminecraft_version=${{ matrix.minecraft }} \
-      -Pneo_version=${{ matrix.neo }} \
-      -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
-      -Pparchment_mappings_version=${{ matrix.parchment_mappings }} \
-      -Pjava_version=${{ matrix.java }}
-        
- 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #   修正縮排與 - name 語法
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+
+      - name: Build
+        run: |
+          ./gradlew build \
+            -Pminecraft_version=${{ matrix.minecraft }} \
+            -Pneo_version=${{ matrix.neo }} \
+            -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
+            -Pparchment_mappings_version=${{ matrix.parchment_mappings }} \
+            -Pjava_version=${{ matrix.java }}
