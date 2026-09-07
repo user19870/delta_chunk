@@ -17,14 +17,12 @@ jobs:
             neo: "21.1.244"
             parchment_minecraft: "1.21.1"
             parchment_mappings: "2024.11.17"
-            loader_version_range: "[1,)"
             java: "21"
 
           - minecraft: "1.21.2"
             neo: "21.2.1-beta"
-            parchment_minecraft: "1.21.2"
-            parchment_mappings: "2024.11.17"
-            loader_version_range: "[1,)"
+            parchment_minecraft: "1.21.3"
+            parchment_mappings: "2024.12.07"
             java: "21"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
@@ -41,9 +39,8 @@ jobs:
 
       - name: Build
         run: |
-          ./gradlew build \
-            -Pminecraft_version=${{ matrix.minecraft }} \
-            -Pneo_version=${{ matrix.neo }} \
-            -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
-            -Pparchment_mappings_version=${{ matrix.parchment_mappings }} \
-            -Pjava_version=${{ matrix.java }}
+          ./gradlew clean build --no-daemon \
+          -Pminecraft_version=${{ matrix.minecraft }} \
+          -Pneo_version=${{ matrix.neo }} \
+          -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
+          -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
