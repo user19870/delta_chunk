@@ -1,4 +1,4 @@
-name: Build Delta Chunk
+name: Build Delta Chunk on 1.21.2
 
 on:
   
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    name: Build NeoForge 1.21.1 mod
+    name: Build NeoForge 1.21.2 mod
     runs-on: ubuntu-latest
 
     steps:
