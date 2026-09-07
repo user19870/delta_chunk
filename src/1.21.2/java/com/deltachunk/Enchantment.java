@@ -66,12 +66,12 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
             enchantments.getOrThrow(DELTA_DELETE);
 
     ItemStack deltaAddBook =
-            DataComponents.WRITTEN_BOOK_CONTENT.createForEnchantment(
+            EnchantedBookItem.createForEnchantment(
                     new EnchantmentInstance(deltaAdd, 1)
             );
 
     ItemStack deltaDeleteBook =
-            DataComponents.WRITTEN_BOOK_CONTENT.createForEnchantment(
+            EnchantedBookItem.createForEnchantment(
                     new EnchantmentInstance(deltaDelete, 1)
             );
 
