@@ -48,9 +48,38 @@ jobs:
           -Pneo_version=${{ matrix.neo }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
           -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
-      - name: Upload mod JAR
+      - name: Prepare mod JAR
+        run: |
+          mkdir -p artifacts
+          cp build/libs/*.jar "artifacts/deltachunk-${{ matrix.minecraft }}.jar"
+
+      - name: Upload version JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: deltachunk-jar-${{ matrix.minecraft }}
+          path: artifacts/*.jar
+          if-no-files-found: error
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all version JARs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: deltachunk-jar-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create ZIP
+        run: |
+          cd artifacts
+          zip "../deltachunk-${{ github.sha }}.zip" *.jar
+
+      - name: Upload combined ZIP
         uses: actions/upload-artifact@v4
         with:
           name: deltachunk-${{ github.sha }}
-          path: build/libs/*.jar
+          path: deltachunk-${{ github.sha }}.zip
           if-no-files-found: error
