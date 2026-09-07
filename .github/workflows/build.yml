@@ -51,13 +51,11 @@ jobs:
       - name: Prepare mod JAR
         run: |
           mkdir -p artifacts
-          for file in build/libs/*.jar; do
-           filename=$(basename "$file" .jar)
-           cp "$file" "artifacts/${filename}-${{ matrix.minecraft }}.jar"
-           done
-       - name: Upload version JAR
-         uses: actions/upload-artifact@v4
-         with:
+          rename build/libs/*.jar build/libs/*.${{ matrix.minecraft }}.jar
+          cp build/libs/*.jar artifacts/
+      - name: Upload version JAR
+        uses: actions/upload-artifact@v4
+        with:
             name: deltachunk-jar-${{ matrix.minecraft }}
             path: build/libs/*.jar
             if-no-files-found: error
