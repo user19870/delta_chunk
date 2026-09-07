@@ -51,7 +51,7 @@ jobs:
       - name: Prepare mod JAR
         run: |
           mkdir -p artifacts
-          rename build/libs/*.jar build/libs/*.${{ matrix.minecraft }}.jar
+          mv build/libs/*.jar build/libs/*.${{ matrix.minecraft }}.jar
           cp build/libs/*.jar artifacts/
       - name: Upload version JAR
         uses: actions/upload-artifact@v4
