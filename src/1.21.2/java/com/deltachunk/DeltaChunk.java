@@ -720,10 +720,8 @@ container.registerExtensionPoint(
          */
         var explosion = (ServerExplosion) event.getExplosion();
         
-        var affected = java.util.List.copyOf(
-             event.getAffectedBlocks() 
-            );
-
+       var affected = List.copyOf(explosion.getToBlow());
+       
         level.getServer().execute(() -> {
 
             for (BlockPos pos : affected) {
