@@ -257,10 +257,11 @@ public final class DeltaReplay {
             toLoad.putInt("y", pos.getY());
             toLoad.putInt("z", pos.getZ());
 
-            blockEntity.loadWithComponents(
-                    toLoad,
-                    level.registryAccess()
-            );
+            TagValueInput input = TagValueInput.create(
+                ProblemReporter.DISCARDING,  level.registryAccess(),  toLoad
+        );
+                
+                blockEntity.loadWithComponents(input);
 
             blockEntity.setChanged();
 
