@@ -53,7 +53,7 @@ jobs:
 
       - name: Build
         run: |
-          ./gradlew clean build --no-daemon \
+          ./gradlew clean build --no-daemon --no-configuration-cache\
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pneo_version=${{ matrix.neo }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
