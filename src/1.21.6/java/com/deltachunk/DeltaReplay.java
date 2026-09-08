@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 
 import net.minecraft.util.ProblemReporter;
 /**
@@ -260,11 +260,13 @@ public final class DeltaReplay {
             toLoad.putInt("y", pos.getY());
             toLoad.putInt("z", pos.getZ());
 
-            TagValueInput input = TagValueInput.create(
-                ProblemReporter.DISCARDING,  level.registryAccess(),  toLoad
-        );
-                
-                blockEntity.loadWithComponents(input);
+            ValueInput input = TagValueInput.create(
+    ProblemReporter.DISCARDING,
+    level.registryAccess(),
+    toLoad
+);
+
+blockEntity.loadWithComponents(input);
 
             blockEntity.setChanged();
 
