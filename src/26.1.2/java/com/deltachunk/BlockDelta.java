@@ -82,7 +82,7 @@ public final class BlockDelta {
                         .toString()
         );
 
-        Stream<Property.Value<T>> values =
+        Stream<Property.Value<Map>> values =
                 state.getValues();
 
         if (!values.isEmpty()) {

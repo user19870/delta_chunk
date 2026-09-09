@@ -67,7 +67,7 @@ public final class DeltaIndex {
                 );
 
         chunks.add(
-                new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4)
+                new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4).pack()
         );
     }
 
@@ -103,7 +103,7 @@ public final class DeltaIndex {
         }
 
         return chunks.contains(
-                pack(pos)
+                pos.pack()
         );
     }
 
