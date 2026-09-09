@@ -65,7 +65,7 @@ jobs:
           #   java: "21"
           - minecraft: "26.1.2"
             neo: "26.1.2.107"
-            java: "21"
+            java: "25"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
     steps:
