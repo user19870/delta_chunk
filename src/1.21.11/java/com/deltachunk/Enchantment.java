@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.InteractionHand;
@@ -35,7 +35,7 @@ public final class Enchantment {
     private static final ResourceKey<net.minecraft.world.item.enchantment.Enchantment> DELTA_ADD =
             ResourceKey.create(
                     Registries.ENCHANTMENT,
-                    ResourceLocation.fromNamespaceAndPath(
+                    Identifier.fromNamespaceAndPath(
                             DeltaChunk.MOD_ID,
                             "delta_add"
                     )
@@ -44,7 +44,7 @@ public final class Enchantment {
     private static final ResourceKey<net.minecraft.world.item.enchantment.Enchantment> DELTA_DELETE =
             ResourceKey.create(
                     Registries.ENCHANTMENT,
-                    ResourceLocation.fromNamespaceAndPath(
+                    Identifier.fromNamespaceAndPath(
                             DeltaChunk.MOD_ID,
                             "delta_delete"
                     )

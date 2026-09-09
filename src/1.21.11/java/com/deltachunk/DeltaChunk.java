@@ -3,7 +3,7 @@ package com.deltachunk;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -504,7 +504,7 @@ container.registerExtensionPoint(
 
         Path worldRoot = server.getWorldPath(LevelResource.ROOT);
 
-        ResourceKey<Level> dimensionKey = level.dimension();
+        Identifier<Level> dimensionKey = level.dimension();
 
         if (dimensionKey.equals(Level.OVERWORLD)) {
             return worldRoot.resolve("region");
@@ -535,7 +535,7 @@ container.registerExtensionPoint(
  
         Path worldRoot = server.getWorldPath(LevelResource.ROOT);
  
-        ResourceKey<Level> dimensionKey = level.dimension();
+        Identifier<Level> dimensionKey = level.dimension();
  
         if (dimensionKey.equals(Level.OVERWORLD)) {
             return worldRoot.resolve("entities");
