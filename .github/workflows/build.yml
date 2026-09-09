@@ -38,11 +38,16 @@ jobs:
           #   parchment_minecraft: "1.21.6"
           #   parchment_mappings: "2025.06.29"
           #   java: "21"
-          - minecraft: "1.21.7"
-            neo: "21.7.25-beta"
-            parchment_minecraft: "1.21.7"
-            parchment_mappings: "2025.07.18"
-            java: "21"
+          # - minecraft: "1.21.7"
+          #   neo: "21.7.25-beta"
+          #   parchment_minecraft: "1.21.7"
+          #   parchment_mappings: "2025.07.18"
+          #   java: "21"
+          # - minecraft: "1.21.8"
+          #   neo: "21.8.54"
+          #   parchment_minecraft: "1.21.8"
+          #   parchment_mappings: "2025.09.14"
+          #   java: "21"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
     steps:
