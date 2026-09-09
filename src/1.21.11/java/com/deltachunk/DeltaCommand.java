@@ -84,7 +84,7 @@ public final class DeltaCommand {
 
         dispatcher.register(
                 Commands.literal("deltachunk")
-                        .requires(Commands.hasPermission(LevelBasedPermissionSet.GAMEMASTER))
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(
                                 Commands.literal("add")
                                         .then(corners(DeltaCommand::runAdd))
