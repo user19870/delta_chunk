@@ -82,7 +82,7 @@ public final class BlockDelta {
                         .toString()
         );
 
-       Stream<Property.Value<?>> values = state.getValues();
+        Stream<Property.Value<?>> values = state.getValues();
 
 List<Property.Value<?>> valueList = values.toList();
 
@@ -92,27 +92,23 @@ if (!valueList.isEmpty()) {
 
     boolean first = true;
 
-    for (Property.Value<?> value : valueList){
+    for (Property.Value<?> value : valueList) {
+        Property<?> property = value.property();
+        Comparable<?> selectedValue = value.value();
 
-                if (!first) {
-                    builder.append(',');
-                }
-
-                first = false;
-
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                Property property = entry.getKey();
-
-                builder.append(property.getName());
-                builder.append('=');
-                @SuppressWarnings("unchecked")
-                String valueName =
-                        property.getName(entry.getValue());
-                builder.append(valueName);
-            }
-
-            builder.append(']');
+        if (!first) {
+            builder.append(',');
         }
+
+        first = false;
+
+        builder.append(property.getName());
+        builder.append('=');
+        builder.append(selectedValue);
+    }
+
+    builder.append(']');
+}
 
         return builder.toString();
     }
