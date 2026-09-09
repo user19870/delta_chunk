@@ -82,19 +82,17 @@ public final class BlockDelta {
                         .toString()
         );
 
-        Stream<Property.Value<Map>> values =
-                state.getValues();
+       Stream<Property.Value<?>> values = state.getValues();
 
-        if (!values.isEmpty()) {
+List<Property.Value<?>> valueList = values.toList();
 
-            builder.append('[');
+if (!valueList.isEmpty()) {
 
-            boolean first = true;
+    builder.append('[');
 
-            for (
-                    Map.Entry<Property<?>, Comparable<?>> entry :
-                    values.entrySet()
-            ) {
+    boolean first = true;
+
+    for (Property.Value<?> value : valueList){
 
                 if (!first) {
                     builder.append(',');
