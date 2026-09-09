@@ -509,15 +509,15 @@ container.registerExtensionPoint(
         ResourceKey<Level> dimensionKey = level.dimension();
 
         if (dimensionKey.equals(Level.OVERWORLD)) {
-            return worldRoot.resolve("region");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("overworld").resolve("region");
         }
 
         if (dimensionKey.equals(Level.NETHER)) {
-            return worldRoot.resolve("DIM-1").resolve("region");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("the_nether").resolve("region");
         }
 
         if (dimensionKey.equals(Level.END)) {
-            return worldRoot.resolve("DIM1").resolve("region");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("the_end").resolve("region");
         }
 
         Identifier identifier = dimensionKey.identifier();
@@ -542,15 +542,15 @@ container.registerExtensionPoint(
         ResourceKey<Level> dimensionKey = level.dimension();
  
         if (dimensionKey.equals(Level.OVERWORLD)) {
-            return worldRoot.resolve("entities");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("overworld").resolve("entities");
         }
  
         if (dimensionKey.equals(Level.NETHER)) {
-            return worldRoot.resolve("DIM-1").resolve("entities");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("the_nether").resolve("entities");
         }
  
         if (dimensionKey.equals(Level.END)) {
-            return worldRoot.resolve("DIM1").resolve("entities");
+            return worldRoot.resolve("dimensions").resolve("minecraft").resolve("the_end").resolve("entities");
         }
  
         Identifier identifier = dimensionKey.identifier();
