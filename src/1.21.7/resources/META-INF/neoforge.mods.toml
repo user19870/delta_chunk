@@ -1,0 +1,30 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+
+license="MIT"
+
+[[mods]]
+modId="deltachunk"
+version="0.2.1"
+displayName="Delta Chunk"
+authors="user19870"
+logoFile = "DeltaChunk.png"
+description='''
+Save chunk as small as possible to reduce world size but try to use original mca region
+'''
+ 
+
+ 
+[[dependencies.deltachunk]]
+modId="neoforge"
+type="required"
+versionRange="[21,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.deltachunk]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.6,)"
+ordering="NONE"
+side="BOTH"
