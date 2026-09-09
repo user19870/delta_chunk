@@ -246,7 +246,7 @@ deltaDeleteBook.set(
          *
          * 因此玩家不需要真的成為 OP。
          */
-        player.getServer()
+        player.level().getServer()
                 .getCommands()
                 .performPrefixedCommand(
                         player.createCommandSourceStack()
