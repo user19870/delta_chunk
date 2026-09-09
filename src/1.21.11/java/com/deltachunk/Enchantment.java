@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -250,7 +251,7 @@ deltaDeleteBook.set(
                 .getCommands()
                 .performPrefixedCommand(
                         player.createCommandSourceStack()
-                                .withPermission(2),
+                                .withPermission(LevelBasedPermissionSet.GAMEMASTER),
                         command
                 );
     }
