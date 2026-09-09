@@ -67,7 +67,7 @@ public final class DeltaIndex {
                 );
 
         chunks.add(
-                new ChunkPos.pack(pos.getX() >> 4, pos.getZ() >> 4)
+                new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4)
         );
     }
 
