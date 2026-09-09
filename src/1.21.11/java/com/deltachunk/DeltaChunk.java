@@ -504,7 +504,7 @@ container.registerExtensionPoint(
 
         Path worldRoot = server.getWorldPath(LevelResource.ROOT);
 
-        Identifier<Level> dimensionKey = level.dimension();
+        Identifier dimensionKey = level.dimension().identifier();
 
         if (dimensionKey.equals(Level.OVERWORLD)) {
             return worldRoot.resolve("region");
@@ -535,7 +535,7 @@ container.registerExtensionPoint(
  
         Path worldRoot = server.getWorldPath(LevelResource.ROOT);
  
-        Identifier<Level> dimensionKey = level.dimension();
+        Identifier dimensionKey = level.dimension().identifier();
  
         if (dimensionKey.equals(Level.OVERWORLD)) {
             return worldRoot.resolve("entities");
@@ -914,7 +914,7 @@ container.registerExtensionPoint(
 
     private static String dimensionId(ServerLevel level) {
 
-        return level.dimension().location().toString();
+        return level.dimension().identifier().toString();
     }
 
     private static ServerLevel getServerLevel(ChunkAccess chunk) {

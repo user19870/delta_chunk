@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -470,7 +471,7 @@ public final class DeltaCommand {
 
     private static String dimensionId(ServerLevel level) {
 
-        return level.dimension().location().toString();
+        return level.dimension().identifier().toString();
     }
 
     /**
