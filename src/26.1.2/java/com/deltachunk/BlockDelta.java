@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Stream;
 /**
  * A single "the player changed this" record for one block position.
