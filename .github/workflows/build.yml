@@ -84,6 +84,7 @@ jobs:
           ./gradlew clean build --no-daemon --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pneo_version=${{ matrix.neo }} \
+          -Pjava_version=${{ matrix.java }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
           -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
       - name: Prepare mod JAR
