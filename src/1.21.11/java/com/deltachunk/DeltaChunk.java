@@ -519,8 +519,10 @@ container.registerExtensionPoint(
             return worldRoot.resolve("DIM1").resolve("region");
         }
 
-        String namespace = dimensionKey.getNamespace();
-        String path = dimensionKey.getPath();
+        Identifier identifier = dimensionKey.identifier();
+
+        String namespace = identifier.getNamespace();
+        String path = identifier.getPath();
 
         return worldRoot
                 .resolve("dimensions")
@@ -550,8 +552,10 @@ container.registerExtensionPoint(
             return worldRoot.resolve("DIM1").resolve("entities");
         }
  
-        String namespace = dimensionKey.getNamespace();
-        String path = dimensionKey.getPath();
+        Identifier identifier = dimensionKey.identifier();
+
+        String namespace = identifier.getNamespace();
+        String path = identifier.getPath();
  
         return worldRoot
                 .resolve("dimensions")
