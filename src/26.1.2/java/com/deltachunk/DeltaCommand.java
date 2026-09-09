@@ -447,7 +447,7 @@ public final class DeltaCommand {
 
     private static long regionKeyFor(BlockPos pos) {
 
-        ChunkPos chunkPos = new ChunkPos(pos);
+        ChunkPos chunkPos = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
 
         return packRegionKey(
                 chunkPos.getRegionX(),

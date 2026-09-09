@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-
+import net.minecraft.world.level.block.state.properties;
 import java.util.Map;
 
 /**
@@ -83,7 +83,7 @@ public final class BlockDelta {
                         .toString()
         );
 
-        Map<Property<?>, Comparable<?>> values =
+        Stream<Property.Value<T>> values =
                 state.getValues();
 
         if (!values.isEmpty()) {

@@ -21,6 +21,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
@@ -318,7 +319,7 @@ container.registerExtensionPoint(
 
             BlockPos pos = BlockPos.of(entry.getKey());
 
-            ChunkPos chunkPos = new ChunkPos(pos);
+            ChunkPos chunkPos = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
 
             long regionKey =
                     packRegionKey(
@@ -633,7 +634,7 @@ container.registerExtensionPoint(
                 return;
             }
 
-            if (!currentLevel.hasChunk(pos.x, pos.z)) {
+            if (!currentLevel.hasChunk(pos.x(), pos.z())) {
                 return;
             }
 
@@ -645,7 +646,7 @@ container.registerExtensionPoint(
     // Block-level change tracking
     // ------------------------------------------------------------
 
-    private void onBlockBreak(BlockEvent.BreakEvent event) {
+    private void onBlockBreak(BreakBlockEvent event) {
 
         /*
          * The block is about to become air. Record air explicitly
