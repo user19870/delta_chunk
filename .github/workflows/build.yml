@@ -13,6 +13,11 @@ jobs:
     strategy:
       matrix:
         include:
+          - minecraft: "1.20.1"
+            forge: "47.1.3"
+            parchment_minecraft: "1.20.1"
+            parchment_mappings: "2023.09.03"
+            java: "17"
           # - minecraft: "1.21.1"
           #   neo: "21.1.244"
           #   parchment_minecraft: "1.21.1"
@@ -87,6 +92,7 @@ jobs:
           ./gradlew clean build --no-daemon --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pneo_version=${{ matrix.neo }} \
+          -Pforge_version=${{ matrix.forge }} \
           -Pjava_version=${{ matrix.java }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
           -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
