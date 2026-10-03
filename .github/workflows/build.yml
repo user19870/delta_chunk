@@ -71,8 +71,11 @@ jobs:
            # - minecraft: "26.1.2"
            #   neo: "26.1.2.107"
            #   java: "25"
-           - minecraft: "26.2"
-             neo: "26.2.0.82"
+           # - minecraft: "26.2"
+           #   neo: "26.2.0.82"
+           #   java: "25"
+           - minecraft: "26.3"
+             neo: "26.3.0.23-beta"
              java: "25"
 
     #  steps 只能出現一次，且與 strategy 靠左對齊
