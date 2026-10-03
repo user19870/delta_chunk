@@ -18,6 +18,7 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.ServerExplosion;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -122,7 +123,7 @@ public final class DeltaChunk {
 
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         container.registerConfig(
-        net.neoforged.fml.config.ModConfig.Type.COMMON,
+        ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
 container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
