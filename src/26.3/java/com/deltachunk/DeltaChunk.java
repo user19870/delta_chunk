@@ -123,7 +123,7 @@ public final class DeltaChunk {
 
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         container.registerConfig(
-        ModConfig.Type.COMMON,
+        ModConfig.Type.LOCAL,
         DeltaConfig.SPEC
 );
 container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
