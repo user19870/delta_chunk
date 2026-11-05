@@ -37,7 +37,7 @@ java.toolchain.languageVersion =
 minecraft {
     // Specify the version of NeoForge to use.
   // version = project.forge_version
- mappings channel: official, version: project.forge_version
+ mappings channel: 'official', version: project.forge_version
  
 
     // This line is optional. Access Transformers are automatically detected
