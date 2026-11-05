@@ -1,15 +1,14 @@
-if (project.hasProperty('forge')) {
-    apply from: 'forge_build.gradle'
-} else {
-    apply from: 'build.gradle'
-}
-
-
 plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.147'
     id 'idea'
+}
+
+if (project.hasProperty('forge')) {
+    apply from: 'forge_build.gradle'
+} else {
+    apply from: 'build.gradle'
 }
 
 tasks.named('wrapper', Wrapper).configure {
