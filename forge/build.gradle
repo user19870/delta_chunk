@@ -95,10 +95,11 @@ sourceSets {
 }
 
 mods {
-    "${mod_id}" {
-        sourceSet(sourceSets.main)
-    }
-}
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
 }
 
 // Sets up a dependency configuration called 'localRuntime'.
