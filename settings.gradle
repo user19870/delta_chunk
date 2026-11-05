@@ -3,7 +3,11 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
+if (project.hasProperty('forge')) {
+    apply from: 'forge_build.gradle'
+} else {
+    apply from: 'build.gradle'
+}
 plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
