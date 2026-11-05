@@ -1,0 +1,80 @@
+name: Build Delta Chunk--multi_version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build: 
+    runs-on: ubuntu-latest
+#按下ctrl+/可快速註解/取消註解
+    strategy:
+      matrix:
+        include:
+           - minecraft: "1.20.1"
+             forge: "47.1.3"
+             parchment_minecraft: "1.20.1"
+             parchment_mappings: "2023.09.03"
+             java: "17"
+
+    #  steps 只能出現一次，且與 strategy 靠左對齊
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #   修正縮排與 - name 語法
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+
+      - name: Build
+        run: |
+          ./gradlew clean -b forge_build.gradle build --no-daemon --no-configuration-cache \
+          -Pminecraft_version=${{ matrix.minecraft }} \
+          -Pforge_version=${{ matrix.forge }} \
+          -Pjava_version=${{ matrix.java }} \
+          -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
+          -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
+      - name: Prepare mod JAR
+        run: |
+          mkdir -p artifacts
+           for file in build/libs/*.jar; do
+              mv "$file" "${file%.jar}-${{ matrix.minecraft }}.jar"
+              cp build/libs/*.jar artifacts/
+             done
+      - name: Upload version JAR
+        uses: actions/upload-artifact@v4
+        with:
+            name: deltachunk-jar-${{ matrix.minecraft }}
+            path: build/libs/*.jar
+            if-no-files-found: error
+
+     
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all version JARs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: deltachunk-jar-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create ZIP
+        run: |
+          cd artifacts
+          zip "../deltachunk-${{ github.sha }}.zip" *.jar
+
+      - name: Upload combined ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: deltachunk-${{ github.sha }}
+          path: deltachunk-${{ github.sha }}.zip
+          if-no-files-found: error
