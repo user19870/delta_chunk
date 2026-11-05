@@ -1,0 +1,6 @@
+// 這個檔案不包含任何設定，只做條件導向
+if (project.findProperty("Pforge_version")) {
+    apply from: 'forge/build.gradle'
+} else {
+    apply from: 'neoforge/build.gradle' // 預設使用 forge
+}
