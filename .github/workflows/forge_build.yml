@@ -37,7 +37,7 @@ jobs:
          cp -f ./forge/gradle-wrapper.properties gradle/wrapper/gradle-wrapper.properties
       - name: Build
         run: |
-          ./gradlew clean --no-daemon  --no-configuration-cache \
+          ./gradlew clean build  --no-daemon  --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pforge_version=${{ matrix.forge }} \
           -Pjava_version=${{ matrix.java }} \
