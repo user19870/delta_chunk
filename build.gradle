@@ -1,7 +1,10 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.147'
+    if(project.findProperty('forge_version'){
+    }else{
+         id 'net.neoforged.moddev' version '2.0.147'   
+    }
     id 'idea'
 }
 
