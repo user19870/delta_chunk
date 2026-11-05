@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         run: |
-          ./gradlew clean -b forge_build.gradle build --no-daemon --no-configuration-cache \
+          ./gradlew clean -b forge_build.gradle build --no-daemon --no-settings --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pforge_version=${{ matrix.forge }} \
           -Pjava_version=${{ matrix.java }} \
