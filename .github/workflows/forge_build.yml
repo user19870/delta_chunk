@@ -1,4 +1,4 @@
-name: Build Delta Chunk--multi_version
+name: Build Delta Chunk--forge
 
 on:
   workflow_dispatch:
