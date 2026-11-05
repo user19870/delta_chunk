@@ -1,3 +1,12 @@
+// 根目錄的 build.gradle 變成純分流器
+if (project.hasProperty('forge')) {
+    apply from: 'forge_build.gradle'
+} else {
+    // 預設或是當 loader_type == 'neoforge' 時
+    apply from: 'build.gradle'
+}
+
+
 plugins {
     id 'java-library'
     id 'maven-publish'
