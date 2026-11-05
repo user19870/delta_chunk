@@ -34,6 +34,7 @@ jobs:
         run: |
          cp -f ./forge/build.gradle build.gradle
          cp -f ./forge/settings.gradle settings.gradle
+         cp -f ./forge/gradle-wrapper.properties gradle/wrapper/gradle-wrapper.properties
       - name: Build
         run: |
           ./gradlew clean --no-daemon --no-settings --no-configuration-cache \
