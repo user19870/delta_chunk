@@ -89,7 +89,9 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: temurin
-
+      - name: select_loader
+        run: |
+         cp -f ./forge/build.gradle build.gradle
       - name: Build
         run: |
           ./gradlew clean build --no-daemon --no-configuration-cache \
