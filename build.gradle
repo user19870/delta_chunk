@@ -1,5 +1,0 @@
-if (project.hasProperty('forge')) {
-    apply from: 'forge_build.gradle'
-} else {
-    apply from: 'neoforge_build.gradle'
-}
