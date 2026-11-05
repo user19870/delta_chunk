@@ -30,10 +30,12 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: temurin
-
+      - name: select_loader
+        run: |
+         cp -f ./forge/build.gradle build.gradle
       - name: Build
         run: |
-          ./gradlew clean -b forge_build.gradle build --no-daemon --no-settings --no-configuration-cache \
+          ./gradlew clean --no-daemon --no-settings --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pforge_version=${{ matrix.forge }} \
           -Pjava_version=${{ matrix.java }} \
