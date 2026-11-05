@@ -33,6 +33,7 @@ jobs:
       - name: select_loader
         run: |
          cp -f ./forge/build.gradle build.gradle
+         cp -f ./forge/gradle.properties gradle.properties
       - name: Build
         run: |
           ./gradlew clean --no-daemon --no-settings --no-configuration-cache \
