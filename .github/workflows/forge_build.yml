@@ -36,7 +36,6 @@ jobs:
           ./gradlew clean -b forge_build.gradle build --no-daemon --no-settings --no-configuration-cache \
           -Pminecraft_version=${{ matrix.minecraft }} \
           -Pforge_version=${{ matrix.forge }} \
-          -Pneo_version=none
           -Pjava_version=${{ matrix.java }} \
           -Pparchment_minecraft_version=${{ matrix.parchment_minecraft }} \
           -Pparchment_mappings_version=${{ matrix.parchment_mappings }}
