@@ -66,6 +66,7 @@ minecraft {
 
         // applies to all the run configs above
         configureEach {
+              workingDirectory project.file('run')
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
             // "SCAN": For mods scan.
@@ -76,7 +77,7 @@ minecraft {
             // Recommended logging level for the console
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            logLevel = org.slf4j.event.Level.DEBUG
+           property 'forge.logging.console.level', 'debug'
         }
     }
 
