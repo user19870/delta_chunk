@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.bus.api.IEventBus;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.client.gui.ConfigurationScreen;
-import net.minecraftforge.client.gui.IConfigScreenFactory;
+import net.minecraftforge.client.ConfigScreenHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -122,7 +122,12 @@ public final class DeltaChunk {
         net.minecraftforge.fml.config.ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
-container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+//container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+container.get().registerExtensionPoint(
+    ConfigScreenHandler.ConfigScreenFactory.class,
+    () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new YourConfigScreen(screen))
+);
+
 
 container.registerExtensionPoint(
         IConfigScreenFactory.class,
@@ -845,9 +850,7 @@ container.registerExtensionPoint(
         if (blockEntity != null) {
 
             blockEntityTag =
-                    blockEntity.saveWithFullMetadata(
-                            serverLevel.registryAccess()
-                    );
+                    blockEntity.saveWithFullMetadata();
         }
 
         mark(serverLevel, pos, state, blockEntityTag);

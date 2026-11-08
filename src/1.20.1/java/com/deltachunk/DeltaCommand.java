@@ -209,9 +209,7 @@ public final class DeltaCommand {
             if (blockEntity != null) {
 
                 blockEntityTag =
-                        blockEntity.saveWithFullMetadata(
-                                level.registryAccess()
-                        );
+                        blockEntity.saveWithFullMetadata();
             }
 
             BlockDelta delta =

@@ -337,7 +337,7 @@ public final class WamStore {
                     blockEntity =
                             NbtIo.read(
                                     input,
-                                    NbtAccounter.unlimitedHeap()
+                                    NbtAccounter.UNLIMITED
                             );
                 }
 

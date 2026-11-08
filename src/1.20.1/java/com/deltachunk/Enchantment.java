@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.component.DataComponents;
+//import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -16,8 +16,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ public final class Enchantment {
     private static final ResourceKey<net.minecraft.world.item.enchantment.Enchantment> DELTA_ADD =
             ResourceKey.create(
                     Registries.ENCHANTMENT,
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             DeltaChunk.MOD_ID,
                             "delta_add"
                     )
@@ -43,7 +43,7 @@ public final class Enchantment {
     private static final ResourceKey<net.minecraft.world.item.enchantment.Enchantment> DELTA_DELETE =
             ResourceKey.create(
                     Registries.ENCHANTMENT,
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             DeltaChunk.MOD_ID,
                             "delta_delete"
                     )
@@ -59,11 +59,15 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         .holders()
         .lookupOrThrow(Registries.ENCHANTMENT);
 
-    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
-            enchantments.getOrThrow(DELTA_ADD);
+   ItemStack deltaAdd  =
+        EnchantedBookItem.createForEnchantment(
+                new EnchantmentInstance(deltaAdd.value(), 1)
+        );
 
-    Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
-            enchantments.getOrThrow(DELTA_DELETE);
+ItemStack deltaDelete  =
+        EnchantedBookItem.createForEnchantment(
+                new EnchantmentInstance(deltaDelete.value(), 1)
+        );
 
     ItemStack deltaAddBook =
             EnchantedBookItem.createForEnchantment(
@@ -118,17 +122,11 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         Holder<net.minecraft.world.item.enchantment.Enchantment> deleteHolder =
                 registry.getOrThrow(DELTA_DELETE);
 
-        int addLevel =
-                EnchantmentHelper.getItemEnchantmentLevel(
-                        addHolder,
-                        stack
-                );
+       int addLevel =
+        stack.getEnchantmentLevel(addHolder.value());
 
-        int deleteLevel =
-                EnchantmentHelper.getItemEnchantmentLevel(
-                        deleteHolder,
-                        stack
-                );
+int deleteLevel =
+        stack.getEnchantmentLevel(deleteHolder.value());
 
         boolean hasAdd = addLevel > 0;
         boolean hasDelete = deleteLevel > 0;

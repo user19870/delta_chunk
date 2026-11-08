@@ -1,6 +1,6 @@
 package com.deltachunk;
 
-import net.ForgeConfigSpec.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
  
 import java.util.Set;
