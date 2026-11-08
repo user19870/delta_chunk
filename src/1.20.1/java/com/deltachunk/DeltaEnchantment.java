@@ -120,8 +120,8 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     private static final Map<UUID, BlockPos> FIRST_POINTS =
             new ConcurrentHashMap<>();
 
-    private Enchantment() {
-    }
+   // private DeltaEnchantment() {
+    //}
 
     @SubscribeEvent
     public static void onRightClickBlock(
