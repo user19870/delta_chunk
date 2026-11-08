@@ -17,14 +17,14 @@ Save chunk as small as possible to reduce world size but try to use original mca
  
 [[dependencies.deltachunk]]
 modId="forge"
-type="required"
+mandatory=true
 versionRange="[47,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.deltachunk]]
 modId="minecraft"
-type="required"
+mandatory=true
 versionRange="[1.20.1,1.21)"
 ordering="NONE"
 side="BOTH"
