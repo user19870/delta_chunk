@@ -121,8 +121,8 @@ int deleteLevel = EnchantmentHelper.getItemEnchantmentLevel(DELTA_DELETE.get(), 
     private static final Map<UUID, BlockPos> FIRST_POINTS =
             new ConcurrentHashMap<>();
 
-    private Enchantment() {
-    }
+   // private Enchantment() {
+    //}
 
     @SubscribeEvent
     public static void onRightClickBlock(
