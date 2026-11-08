@@ -14,23 +14,26 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.LevelResource;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.level.ExplosionEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.level.PistonEvent;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.level.PistonEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
-import net.neoforged.fml.ModContainer;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+//import net.minecraftforge.client.gui.ConfigurationScreen;
+import net.minecraftforge.client.ConfigScreenHandler;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -102,36 +105,49 @@ public final class DeltaChunk {
 
     public DeltaChunk(IEventBus modEventBus, ModContainer container) {
 
-        NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
-        NeoForge.EVENT_BUS.addListener(this::onServerStopped);
+        MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
 
-        NeoForge.EVENT_BUS.addListener(this::onLevelUnload);
+        MinecraftForge.EVENT_BUS.addListener(this::onLevelUnload);
 
-        NeoForge.EVENT_BUS.addListener(this::onBlockBreak);
-        NeoForge.EVENT_BUS.addListener(this::onBlockPlace);
-        NeoForge.EVENT_BUS.addListener(this::onBlockToolModification);
-        NeoForge.EVENT_BUS.addListener(this::onFluidBlock);
-        NeoForge.EVENT_BUS.addListener(this::onExplosion);
-        NeoForge.EVENT_BUS.addListener(this::onPiston);
-        NeoForge.EVENT_BUS.addListener(this::onPlayerInteract);
+        MinecraftForge.EVENT_BUS.addListener(this::onBlockBreak);
+        MinecraftForge.EVENT_BUS.addListener(this::onBlockPlace);
+        MinecraftForge.EVENT_BUS.addListener(this::onBlockToolModification);
+        MinecraftForge.EVENT_BUS.addListener(this::onFluidBlock);
+        MinecraftForge.EVENT_BUS.addListener(this::onExplosion);
+        MinecraftForge.EVENT_BUS.addListener(this::onPiston);
+        MinecraftForge.EVENT_BUS.addListener(this::onPlayerInteract);
  
-        NeoForge.EVENT_BUS.addListener(this::onChunkLoad);
+        MinecraftForge.EVENT_BUS.addListener(this::onChunkLoad);
 
-        NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
-        container.registerConfig(
-        net.neoforged.fml.config.ModConfig.Type.COMMON,
+        MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommands);
+        ModLoadingContext.get().registerConfig(
+        ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
-container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+/*//ModLoadingContext.get().registerExtensionPoint(
+        ConfigScreenHandler.ConfigScreenFactory.class,
+        () -> new ConfigScreenHandler.ConfigScreenFactory(
+                (minecraft, screen) -> new DeltaConfig(screen)
+        )
+);
+
+container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, ConfigurationScreen::new);
+
+container.get().registerExtensionPoint(
+    ConfigScreenHandler.ConfigScreenFactory.class,
+    () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.minecraftforge.fml.ModLoadingContext(screen))
+);
 
 container.registerExtensionPoint(
         IConfigScreenFactory.class,
         (modContainer, screen) ->
-                new net.neoforged.neoforge.client.gui.ConfigurationScreen(
+                new net.minecraftforge.client.gui.ConfigurationScreen(
                         modContainer,
                         screen
                 )
-);
+);*/
     }
 
     /**
@@ -682,7 +698,7 @@ container.registerExtensionPoint(
 
         /*
          * This event fires BEFORE the tool interaction (e.g. axe
-         * stripping a log) actually applies in some NeoForge
+         * stripping a log) actually applies in some MinecraftForge
          * versions, so read-from-world immediately after may still
          * see the old state. We mark from world on the next tick
          * instead of trusting a snapshot taken at event time.
@@ -845,9 +861,7 @@ container.registerExtensionPoint(
         if (blockEntity != null) {
 
             blockEntityTag =
-                    blockEntity.saveWithFullMetadata(
-                            serverLevel.registryAccess()
-                    );
+                    blockEntity.saveWithFullMetadata();
         }
 
         mark(serverLevel, pos, state, blockEntityTag);
