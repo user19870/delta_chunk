@@ -123,6 +123,8 @@ public final class DeltaChunk {
         MinecraftForge.EVENT_BUS.addListener(this::onChunkLoad);
 
         MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommands);
+
+        Enchantment.ENCHANTMENTS.register(FMLJavaModLoadingContext.get().getModEventBus());
         ModLoadingContext.get().registerConfig(
         ModConfig.Type.COMMON,
         DeltaConfig.SPEC
