@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.component.DataComponents;
+//import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -82,12 +82,13 @@ ItemStack deltaDeleteBook =
     event.accept(deltaAddBook);
     event.accept(deltaDeleteBook);
 }*/
-@SubscribeEvent
+/*@SubscribeEvent
 public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     if (event.getTabKey() != CreativeModeTabs.COMBAT) {
         return;
     }
-
+int addLevel = EnchantmentHelper.getItemEnchantmentLevel(DELTA_ADD.get(), stack);
+int deleteLevel = EnchantmentHelper.getItemEnchantmentLevel(DELTA_DELETE.get(), stack);
     Enchantment deltaAdd =
             ForgeRegistries.ENCHANTMENTS.getValue(DELTA_ADD);
 
@@ -111,7 +112,7 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
 
         event.accept(deltaDeleteBook);
     }
-}
+}*/
     /*
      * 每個玩家自己的第一點。
      *
@@ -120,8 +121,8 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     private static final Map<UUID, BlockPos> FIRST_POINTS =
             new ConcurrentHashMap<>();
 
-   // private DeltaEnchantment() {
-    //}
+    private Enchantment() {
+    }
 
     @SubscribeEvent
     public static void onRightClickBlock(
