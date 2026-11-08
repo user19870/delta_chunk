@@ -125,7 +125,8 @@ public final class DeltaChunk {
         ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
-ModLoadingContext.get().registerExtensionPoint(
+
+/*//ModLoadingContext.get().registerExtensionPoint(
         ConfigScreenHandler.ConfigScreenFactory.class,
         () -> new ConfigScreenHandler.ConfigScreenFactory(
                 (minecraft, screen) -> new DeltaConfig(screen)
@@ -134,7 +135,6 @@ ModLoadingContext.get().registerExtensionPoint(
 
 container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, ConfigurationScreen::new);
 
-/*//
 container.get().registerExtensionPoint(
     ConfigScreenHandler.ConfigScreenFactory.class,
     () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.minecraftforge.fml.ModLoadingContext(screen))
