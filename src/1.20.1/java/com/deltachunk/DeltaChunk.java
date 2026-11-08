@@ -29,8 +29,11 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
 import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.client.gui.ConfigurationScreen;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+//import net.minecraftforge.client.gui.ConfigurationScreen;
 import net.minecraftforge.client.ConfigScreenHandler;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -118,16 +121,24 @@ public final class DeltaChunk {
         MinecraftForge.EVENT_BUS.addListener(this::onChunkLoad);
 
         MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommands);
-        container.registerConfig(
-        net.minecraftforge.fml.config.ModConfig.Type.COMMON,
+        ModLoadingContext.get().registerConfig(
+        ModConfig.Type.COMMON,
         DeltaConfig.SPEC
 );
-//container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-container.get().registerExtensionPoint(
-    ConfigScreenHandler.ConfigScreenFactory.class,
-    () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new YourConfigScreen(screen))
+ModLoadingContext.get().registerExtensionPoint(
+        ConfigScreenHandler.ConfigScreenFactory.class,
+        () -> new ConfigScreenHandler.ConfigScreenFactory(
+                (minecraft, screen) -> new DeltaConfig(screen)
+        )
 );
 
+container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, ConfigurationScreen::new);
+
+/*//
+container.get().registerExtensionPoint(
+    ConfigScreenHandler.ConfigScreenFactory.class,
+    () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.minecraftforge.fml.ModLoadingContext(screen))
+);
 
 container.registerExtensionPoint(
         IConfigScreenFactory.class,
@@ -136,7 +147,7 @@ container.registerExtensionPoint(
                         modContainer,
                         screen
                 )
-);
+);*/
     }
 
     /**

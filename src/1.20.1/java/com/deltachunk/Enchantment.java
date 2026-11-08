@@ -13,7 +13,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -59,25 +58,21 @@ public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         .holders()
         .lookupOrThrow(Registries.ENCHANTMENT);
 
-   ItemStack deltaAdd  =
+   Holder<net.minecraft.world.item.enchantment.Enchantment> deltaAdd =
+        enchantments.getOrThrow(DELTA_ADD);
+
+Holder<net.minecraft.world.item.enchantment.Enchantment> deltaDelete =
+        enchantments.getOrThrow(DELTA_DELETE);
+
+    ItemStack deltaAddBook =
         EnchantedBookItem.createForEnchantment(
                 new EnchantmentInstance(deltaAdd.value(), 1)
         );
 
-ItemStack deltaDelete  =
+ItemStack deltaDeleteBook =
         EnchantedBookItem.createForEnchantment(
                 new EnchantmentInstance(deltaDelete.value(), 1)
         );
-
-    ItemStack deltaAddBook =
-            EnchantedBookItem.createForEnchantment(
-                    new EnchantmentInstance(deltaAdd, 1)
-            );
-
-    ItemStack deltaDeleteBook =
-            EnchantedBookItem.createForEnchantment(
-                    new EnchantmentInstance(deltaDelete, 1)
-            );
 
     event.accept(deltaAddBook);
     event.accept(deltaDeleteBook);

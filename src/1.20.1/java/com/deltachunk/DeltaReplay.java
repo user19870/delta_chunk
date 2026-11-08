@@ -257,10 +257,7 @@ public final class DeltaReplay {
             toLoad.putInt("y", pos.getY());
             toLoad.putInt("z", pos.getZ());
 
-            blockEntity.loadWithComponents(
-                    toLoad,
-                    level.registryAccess()
-            );
+            blockEntity.load(toLoad);
 
             blockEntity.setChanged();
 
