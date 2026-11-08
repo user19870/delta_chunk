@@ -33,7 +33,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 //import net.minecraftforge.client.gui.ConfigurationScreen;
 import net.minecraftforge.client.ConfigScreenHandler;
-
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,7 +103,9 @@ public final class DeltaChunk {
     private static final Map<MinecraftServer, DeltaIndex> INDICES =
             new ConcurrentHashMap<>();
 
-    public DeltaChunk(IEventBus modEventBus, ModContainer container) {
+    public DeltaChunk() {
+    IEventBus modEventBus =
+            FMLJavaModLoadingContext.get().getModEventBus();
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
