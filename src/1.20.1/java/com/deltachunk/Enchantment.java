@@ -48,7 +48,7 @@ public final class Enchantment {
                     )
             );
  //tab
-        @SubscribeEvent
+      /*   @SubscribeEvent
 public static void addCreative(BuildCreativeModeTabContentsEvent event) {
     if (event.getTabKey() != CreativeModeTabs.COMBAT) {
         return;
@@ -76,6 +76,36 @@ ItemStack deltaDeleteBook =
 
     event.accept(deltaAddBook);
     event.accept(deltaDeleteBook);
+}*/
+@SubscribeEvent
+public static void addCreative(BuildCreativeModeTabContentsEvent event) {
+    if (event.getTabKey() != CreativeModeTabs.COMBAT) {
+        return;
+    }
+
+    Enchantment deltaAdd =
+            ForgeRegistries.ENCHANTMENTS.getValue(DELTA_ADD);
+
+    Enchantment deltaDelete =
+            ForgeRegistries.ENCHANTMENTS.getValue(DELTA_DELETE);
+
+    if (deltaAdd != null) {
+        ItemStack deltaAddBook =
+                EnchantedBookItem.createForEnchantment(
+                        new EnchantmentInstance(deltaAdd, 1)
+                );
+
+        event.accept(deltaAddBook);
+    }
+
+    if (deltaDelete != null) {
+        ItemStack deltaDeleteBook =
+                EnchantedBookItem.createForEnchantment(
+                        new EnchantmentInstance(deltaDelete, 1)
+                );
+
+        event.accept(deltaDeleteBook);
+    }
 }
     /*
      * 每個玩家自己的第一點。
